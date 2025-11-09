@@ -1,7 +1,5 @@
 # 🌸 Florist Website
 
-Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan, serta mempermudah admin dalam mengelola pesanan secara efisien.
-
 ---
 
 ## 🛠️ Tech Stack
@@ -83,4 +81,5 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 - Website berfungsi sebagai katalog, sistem pemesanan, dan pengelolaan data pesanan.
 
 ---
+
 
