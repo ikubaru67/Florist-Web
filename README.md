@@ -1,43 +1,88 @@
-Backend: Laravel (rencananya)
-Frontend: React JS
-Hosting: Hostinger
-==============================================================
-user feature:
-1. Login
-2. Profil Detail (bisa edit)
-2. Melihat Katalog Barang
-3. Keranjang
-4. Order Pesanan
-5. Melihat status Pesanan
+# 🌸 Florist Website
 
-user flow:
-1. user buka web florist
-2. user login/register
-3. user buka salah satu bouquet yang ada di menu
-4. user klik order
-5. user mengisi format pembelian (deskripsi, catatan atau ada yang ingin di custom)
-6. selesai mengisi format, user klik checkout
-7. user menerima invoice, lalu lanjut pembayaran via Whatsapp chat.
+Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan, serta mempermudah admin dalam mengelola pesanan secara efisien.
 
-=============================================================
-admin feature:
-1. Melihat List Pesanan
-2. Update Status Pesanan
-3. Menerima Pesanan (Jika Customer sudah Bayar via Bukti di WA)
-4. Menolak Pesanan
+---
 
-admin login flow:
-1. buka halaman login admin web florist
-2. dashboard (list pesanan)
+## 🛠️ Tech Stack
 
-admin accept order flow:
-1. klik detail salah satu pesanan yang ada di list
-2. klik tombol "Proses Pesanan" (Status Pesanan: Proses)
+| Bagian     | Teknologi        |
+|-------------|------------------|
+| **Backend** | Laravel *(rencana)* |
+| **Frontend**| React.js         |
+| **Hosting** | Hostinger        |
 
-admin reject order flow:
-1. klik detail salah satu pesanan yang ada di list
-2. klik tombol "Tolak" (Status Pesanan: Cancel)
+---
 
-admin update order flow:
-1. klik tombol "Edit" di salah satu pesanan yang ada di list
-2. ubah salah satu kolom atau status, jika sudah klik "Update".
+## 👩‍💐 User Features
+
+1. 🔐 Login / Register  
+2. 🧍 Profil Detail (bisa edit)  
+3. 🌷 Melihat Katalog Menu  
+4. 🛒 Keranjang  
+5. 🧾 Order Pesanan  
+6. 👀 Melihat Status Pesanan  
+7. ⚙️ Sortir Menu berdasarkan pilihan (Harga, Jenis, dll)
+
+---
+
+## 🌼 User Flow
+
+1. User membuka web florist  
+2. User login atau register  
+3. User membuka salah satu bouquet di katalog  
+4. User klik **Order**  
+5. User mengisi form pembelian (deskripsi, catatan, atau permintaan custom)  
+6. Setelah selesai, user klik **Checkout**  
+7. User menerima **Invoice**, lalu melanjutkan pembayaran via **WhatsApp chat**
+
+---
+
+## 🧑‍💻 Admin Features
+
+1. 📋 Melihat List Pesanan  
+2. 🔄 Update Status Pesanan  
+3. ✅ Menerima Pesanan (jika customer sudah bayar & kirim bukti via WhatsApp)  
+4. ❌ Menolak Pesanan  
+
+---
+
+## 🗂️ Admin Login Flow
+
+1. Buka halaman login admin web florist  
+2. Masuk ke dashboard (menampilkan list pesanan)
+
+---
+
+## 🪄 Admin Accept Order Flow
+
+1. Klik **Detail** pada salah satu pesanan di list  
+2. Klik tombol **"Proses Pesanan"**  
+   - Status Pesanan akan berubah menjadi: `Proses`
+
+---
+
+## 🚫 Admin Reject Order Flow
+
+1. Klik **Detail** pada salah satu pesanan di list  
+2. Klik tombol **"Tolak"**  
+   - Status Pesanan akan berubah menjadi: `Cancel`
+
+---
+
+## ✏️ Admin Update Order Flow
+
+1. Klik tombol **"Edit"** di salah satu pesanan  
+2. Ubah kolom atau status pesanan  
+3. Klik **"Update"** untuk menyimpan perubahan
+
+---
+
+## 💡 Catatan
+- Proses pembayaran dilakukan melalui **chat WhatsApp**, bukan langsung di website.  
+- Website berfungsi sebagai katalog, sistem pemesanan, dan pengelolaan data pesanan.
+
+---
+
+### 📍 Author
+Dikembangkan oleh [Ikhbal Tri Adira](https://github.com/ikhbaltriadira)
