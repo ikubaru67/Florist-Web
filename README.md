@@ -84,5 +84,3 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 
 ---
 
-### 📍 Author
-Dikembangkan oleh [Ikhbal Tri Adira](https://github.com/ikhbaltriadira)
