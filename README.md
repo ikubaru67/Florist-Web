@@ -10,7 +10,6 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 |-------------|------------------|
 | **Backend** | Laravel *(rencana)* |
 | **Frontend**| React.js         |
-| **Hosting** | Hostinger        |
 
 ---
 
@@ -85,4 +84,5 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 - Website berfungsi sebagai katalog, sistem pemesanan, dan pengelolaan data pesanan.
 
 ---
+
 
