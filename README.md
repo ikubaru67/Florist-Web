@@ -43,7 +43,8 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 1. Melihat List Pesanan  
 2. Update Status Pesanan  
 3. Menerima Pesanan (jika customer sudah bayar & kirim bukti via WhatsApp)  
-4. Menolak Pesanan  
+4. Menolak Pesanan
+5. Menambah Katalog Pesanan/Menu
 
 ---
 
@@ -84,3 +85,4 @@ Proyek website florist ini dirancang untuk memudahkan pelanggan dalam melihat ka
 - Website berfungsi sebagai katalog, sistem pemesanan, dan pengelolaan data pesanan.
 
 ---
+
