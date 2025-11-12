@@ -1,9 +1,4 @@
 # 🌸 Florist Shop Website
-
-Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien.
-
-> � **Developer Guide**: Untuk panduan teknis, setup, dan pengembangan, lihat [DEV-README.md](DEV-README.md)
-
 ---
 
 ## ✨ User Features
@@ -427,3 +422,4 @@ Hasil pencarian ditampilkan
 ---
 
 **Made with 💖 by Florist Shop Team** 🌸
+
