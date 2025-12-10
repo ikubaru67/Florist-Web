@@ -1,15 +1,17 @@
 import ShopLayout from '@/Layouts/ShopLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import StarRating from '@/Components/StarRating';
 
 export default function OrdersIndex({ auth, orders }) {
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [reviewData, setReviewData] = useState({
         rating: 5,
         comment: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const getStatusBadge = (status) => {
         const colors = {
@@ -34,32 +36,36 @@ export default function OrdersIndex({ auth, orders }) {
     const handleOpenReview = (item, order) => {
         setSelectedItem({ ...item, order_id: order.id });
         setShowReviewModal(true);
-        reset();
+        setReviewData({ rating: 5, comment: '' });
+        setErrors({});
     };
 
     const handleCloseReview = () => {
         setShowReviewModal(false);
         setSelectedItem(null);
-        reset();
+        setReviewData({ rating: 5, comment: '' });
+        setErrors({});
     };
 
     const handleSubmitReview = (e) => {
         e.preventDefault();
         
-        const reviewData = {
-            rating: data.rating,
-            comment: data.comment,
+        const submitData = {
+            rating: reviewData.rating,
+            comment: reviewData.comment,
             order_id: selectedItem.order_id,
             order_item_id: selectedItem.id
         };
         
         console.log('=== REVIEW SUBMISSION START ===');
         console.log('Product ID:', selectedItem.product_id);
-        console.log('Review Data:', reviewData);
+        console.log('Review Data:', submitData);
         console.log('URL:', `/products/${selectedItem.product_id}/reviews`);
         
-        // Inertia post: (url, data, options)
-        post(`/products/${selectedItem.product_id}/reviews`, reviewData, {
+        setIsSubmitting(true);
+        
+        // Use router.post directly instead of useForm post
+        router.post(`/products/${selectedItem.product_id}/reviews`, submitData, {
             onBefore: () => {
                 console.log('onBefore: Request about to be sent');
             },
@@ -71,13 +77,15 @@ export default function OrdersIndex({ auth, orders }) {
             },
             onSuccess: (page) => {
                 console.log('onSuccess: Review submitted!', page);
+                handleCloseReview();
             },
-            onError: (errors) => {
-                console.log('onError: Submission failed', errors);
+            onError: (err) => {
+                console.log('onError: Submission failed', err);
+                setErrors(err);
             },
             onFinish: () => {
                 console.log('onFinish: Request finished');
-                handleCloseReview();
+                setIsSubmitting(false);
                 console.log('=== REVIEW SUBMISSION END ===');
             }
         });
@@ -253,14 +261,14 @@ export default function OrdersIndex({ auth, orders }) {
                                     Rating Anda
                                 </label>
                                 <StarRating
-                                    rating={data.rating}
-                                    onChange={(rating) => setData('rating', rating)}
+                                    rating={reviewData.rating}
+                                    onChange={(rating) => setReviewData({ ...reviewData, rating })}
                                     interactive={true}
                                     size="lg"
                                     showNumber={false}
                                 />
                                 <p className="text-sm text-gray-600 mt-1">
-                                    Pilih {data.rating} dari 5 bintang
+                                    Pilih {reviewData.rating} dari 5 bintang
                                 </p>
                                 {errors.rating && (
                                     <p className="text-red-600 text-sm mt-1">{errors.rating}</p>
@@ -272,8 +280,8 @@ export default function OrdersIndex({ auth, orders }) {
                                     Komentar (Opsional)
                                 </label>
                                 <textarea
-                                    value={data.comment}
-                                    onChange={(e) => setData('comment', e.target.value)}
+                                    value={reviewData.comment}
+                                    onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
                                     rows={4}
                                     className="w-full rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                                     placeholder="Bagikan pengalaman Anda dengan produk ini..."
@@ -293,10 +301,10 @@ export default function OrdersIndex({ auth, orders }) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={isSubmitting}
                                     className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50"
                                 >
-                                    {processing ? 'Mengirim...' : 'Kirim Review'}
+                                    {isSubmitting ? 'Mengirim...' : 'Kirim Review'}
                                 </button>
                             </div>
                         </form>
