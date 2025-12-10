@@ -46,14 +46,14 @@ export default function OrdersIndex({ auth, orders }) {
     const handleSubmitReview = (e) => {
         e.preventDefault();
         
+        // Inertia post: (url, data, options)
         post(`/products/${selectedItem.product_id}/reviews`, {
+            rating: data.rating,
+            comment: data.comment,
+            order_id: selectedItem.order_id,
+            order_item_id: selectedItem.id
+        }, {
             preserveScroll: true,
-            data: {
-                rating: data.rating,
-                comment: data.comment,
-                order_id: selectedItem.order_id,
-                order_item_id: selectedItem.id
-            },
             onSuccess: () => {
                 handleCloseReview();
             },
