@@ -503,7 +503,3 @@ Hasil pencarian ditampilkan
 
 - **Email:** support@floristshop.com
 - **WhatsApp:** +62 812-3456-7890
-
----
-
-**Made with 💖 by Florist Shop Team** 🌸
