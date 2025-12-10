@@ -1,4 +1,5 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import CloudinaryUploadWidget from '@/Components/CloudinaryUploadWidget';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Create({ auth, categories }) {
@@ -129,27 +130,49 @@ export default function Create({ auth, categories }) {
                                 {/* Image URL */}
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        URL Gambar
+                                        Gambar Produk
                                     </label>
-                                    <input
-                                        type="url"
-                                        value={data.image}
-                                        onChange={(e) => setData('image', e.target.value)}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="https://example.com/image.jpg"
-                                    />
+                                    
+                                    <div className="space-y-3">
+                                        {/* Cloudinary Upload Widget */}
+                                        <CloudinaryUploadWidget
+                                            onUploadSuccess={(result) => setData('image', result.url)}
+                                            buttonText="Upload dari Device"
+                                        />
+                                        
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 h-px bg-gray-300"></div>
+                                            <span className="text-sm text-gray-500">atau</span>
+                                            <div className="flex-1 h-px bg-gray-300"></div>
+                                        </div>
+                                        
+                                        {/* Manual URL Input */}
+                                        <input
+                                            type="url"
+                                            value={data.image}
+                                            onChange={(e) => setData('image', e.target.value)}
+                                            className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Atau paste URL gambar (https://...)"
+                                        />
+                                    </div>
+                                    
                                     {errors.image && (
                                         <p className="text-red-500 text-sm mt-1">{errors.image}</p>
                                     )}
+                                    
+                                    {/* Image Preview */}
                                     {data.image && (
-                                        <img
-                                            src={data.image}
-                                            alt="Preview"
-                                            className="mt-2 h-32 w-32 object-cover rounded border"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                            }}
-                                        />
+                                        <div className="mt-3">
+                                            <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                                            <img
+                                                src={data.image}
+                                                alt="Preview"
+                                                className="h-40 w-40 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
                                     )}
                                 </div>
 
