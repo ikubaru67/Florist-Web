@@ -98,18 +98,17 @@ class ProductReviewController extends Controller
             })
             ->firstOrFail();
 
-        // Check if already reviewed for this specific order item
-        $existingReview = ProductReview::where('user_id', Auth::id())
+        // Check if already reviewed for this order+product combination
+        $existingReviewQuery = ProductReview::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->where('order_id', $order->id);
         
         if (isset($validated['order_item_id'])) {
-            $existingReview->where('order_item_id', $validated['order_item_id']);
+            $existingReviewQuery->where('order_item_id', $validated['order_item_id']);
         }
         
-        if ($existingReview->exists()) {
-            return redirect()->back()
-                ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
+        if ($existingReviewQuery->exists()) {
+            return back()->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
 
         ProductReview::create([
@@ -122,8 +121,8 @@ class ProductReviewController extends Controller
             'is_verified_purchase' => true
         ]);
 
-        return redirect()->back()
-            ->with('success', 'Review berhasil ditambahkan. Terima kasih!');
+        // For Inertia requests, return back with success message
+        return back()->with('success', 'Review berhasil ditambahkan. Terima kasih!');
     }
 
     /**

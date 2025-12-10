@@ -1,5 +1,5 @@
 import ShopLayout from '@/Layouts/ShopLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import StarRating from '@/Components/StarRating';
 
@@ -53,9 +53,11 @@ export default function OrdersIndex({ auth, orders }) {
             order_id: selectedItem.order_id,
             order_item_id: selectedItem.id
         }, {
-            preserveScroll: true,
-            onSuccess: () => {
+            preserveScroll: false,
+            onSuccess: (page) => {
                 handleCloseReview();
+                // Reload current page to refresh order data with reviews
+                router.reload({ only: ['orders'] });
             },
             onError: (errors) => {
                 console.log('Review submission errors:', errors);
