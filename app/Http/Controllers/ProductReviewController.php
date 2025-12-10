@@ -106,6 +106,18 @@ class ProductReviewController extends Controller
             })
             ->firstOrFail();
 
+        // If order_item_id not provided (from product page), find it automatically
+        if (!isset($validated['order_item_id'])) {
+            $orderItem = $order->items()
+                ->where('product_id', $productId)
+                ->first();
+            
+            if ($orderItem) {
+                $validated['order_item_id'] = $orderItem->id;
+                \Log::info('Auto-detected order_item_id', ['order_item_id' => $orderItem->id]);
+            }
+        }
+
         // Check if already reviewed for this order+product combination
         // Need to check both: review with specific order_item_id OR review without order_item_id (from product page)
         $existingReview = ProductReview::where('user_id', Auth::id())
@@ -131,8 +143,7 @@ class ProductReviewController extends Controller
                 'order_id' => $order->id,
                 'order_item_id' => $validated['order_item_id'] ?? null
             ]);
-            return redirect()->route('orders.index')
-                ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
+            return back()->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
 
         $review = ProductReview::create([
@@ -147,9 +158,8 @@ class ProductReviewController extends Controller
 
         \Log::info('Review created successfully', ['review_id' => $review->id]);
 
-        // Return redirect to orders page for Inertia
-        return redirect()->route('orders.index')
-            ->with('success', 'Review berhasil ditambahkan. Terima kasih!');
+        // Return redirect back to previous page (product page or orders page)
+        return back()->with('success', 'Review berhasil ditambahkan. Terima kasih!');
     }
 
     /**

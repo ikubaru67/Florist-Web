@@ -31,14 +31,25 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
 - ✅ Average rating display di katalog
 - ✅ Review count per produk
 
-#### 2. **Product Reviews & Ratings** (NEW FEATURE)
+#### 2. **Product Reviews & Ratings** (NEW FEATURE - Dec 2025)
 - ✅ User bisa memberikan rating (1-5 bintang) setelah order completed
 - ✅ User bisa menulis komentar/review
+- ✅ **Beri rating dari 2 tempat**:
+  - Halaman detail produk (untuk produk yang sudah dibeli)
+  - Halaman "Pesanan Saya" dengan tab filtering
+- ✅ **Tab Navigation di Order History**:
+  - Tab "Semua" - Semua pesanan
+  - Tab "Diproses" - Pesanan pending/processing
+  - Tab "Selesai" - Pesanan completed
+  - Tab "Perlu Rating" - Item yang belum di-review
 - ✅ Verified purchase badge untuk review
 - ✅ Display average rating & total reviews per produk
 - ✅ Review list di halaman detail produk
 - ✅ User hanya bisa review produk yang sudah dibeli
-- ✅ One review per product per order (prevent spam)
+- ✅ One review per product per order (prevent duplicate)
+- ✅ **Auto-detect order_item_id** untuk link review ke item spesifik
+- ✅ Display rating di order history
+- ✅ Redirect kembali ke halaman asal setelah submit review
 
 #### 3. **Shopping Cart**
 - ✅ Tambah produk ke keranjang
@@ -54,7 +65,9 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
 - ✅ Form checkout dengan validasi (nama, email, phone, address)
 - ✅ Auto stock reduction setelah order
 - ✅ Invoice page setelah checkout berhasil
-- ✅ Order history untuk user yang login
+- ✅ **Order history dengan tab navigation** (Semua, Diproses, Selesai, Perlu Rating)
+- ✅ **Review produk langsung dari order history**
+- ✅ Display rating yang sudah diberikan di order history
 
 #### 5. **Authentication**
 - ✅ Register akun baru
@@ -117,10 +130,12 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
 - ✅ Search & filter functionality
 - ✅ Shopping cart dengan CRUD operations
 - ✅ Dual purchase options (direct buy + cart checkout)
-- ✅ **Product ratings & reviews system** (NEW v1.1.0)
-- ✅ **Multiple product images gallery** (NEW v1.1.0)
+- ✅ **Product ratings & reviews system dengan dual entry point** (v1.1.0)
+- ✅ **Order history dengan 4-tab navigation & review integration** (v1.1.0)
+- ✅ **Multiple product images gallery** (v1.1.0)
 - ✅ **Average rating display** di katalog dan detail
 - ✅ **Verified purchase reviews** untuk kredibilitas
+- ✅ **Auto-detection order_item_id** untuk review linking
 
 ### Limitasi yang Diketahui:
 - ⚠️ Payment integration belum ada (manual confirmation)

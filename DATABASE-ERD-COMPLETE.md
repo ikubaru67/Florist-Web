@@ -78,6 +78,7 @@ erDiagram
         bigint product_id FK "→products.id"
         bigint user_id FK "→users.id"
         bigint order_id FK "→orders.id"
+        bigint order_item_id FK "→order_items.id"
         tinyint rating "1-5 stars"
         text comment
         boolean is_verified_purchase
@@ -97,6 +98,7 @@ erDiagram
 
     users ||--o{ product_reviews : "writes"
     orders ||--o{ product_reviews : "can be reviewed"
+    order_items ||--o| product_reviews : "can be reviewed"
 
     cart_items {
         bigint id PK
@@ -338,6 +340,7 @@ Review dan rating produk dari customer
 | `product_id` | BIGINT UNSIGNED | FK → products.id, NOT NULL | Product reference |
 | `user_id` | BIGINT UNSIGNED | FK → users.id, NOT NULL | User reference |
 | `order_id` | BIGINT UNSIGNED | FK → orders.id, NOT NULL | Order reference (verified purchase) |
+| `order_item_id` | BIGINT UNSIGNED | FK → order_items.id, NULLABLE | Specific item reference (auto-detected) |
 | `rating` | TINYINT UNSIGNED | NOT NULL, 1-5 | Rating bintang (1-5) |
 | `comment` | TEXT | NULLABLE | Komentar/review text |
 | `is_verified_purchase` | BOOLEAN | DEFAULT TRUE | Verified purchase badge |
@@ -348,14 +351,16 @@ Review dan rating produk dari customer
 - Belongs To `products` (N:1)
 - Belongs To `users` (N:1)
 - Belongs To `orders` (N:1)
+- Belongs To `order_items` (N:1)
 
 **Foreign Keys:**
 - `product_id` → `products(id)` ON DELETE CASCADE
 - `user_id` → `users(id)` ON DELETE CASCADE
 - `order_id` → `orders(id)` ON DELETE CASCADE
+- `order_item_id` → `order_items(id)` ON DELETE CASCADE
 
 **Unique Constraints:**
-- UNIQUE KEY (`product_id`, `user_id`, `order_id`) - Satu user hanya bisa review 1x per product per order
+- UNIQUE KEY (`product_id`, `user_id`, `order_id`, `order_item_id`) - Satu user hanya bisa review 1x per item per order
 
 **Indexes:**
 - PRIMARY KEY (`id`)
@@ -672,6 +677,7 @@ orders (1) ←→ (N) product_reviews
 | `product_reviews` | `product_id` | `products` | `id` | CASCADE |
 | `product_reviews` | `user_id` | `users` | `id` | CASCADE |
 | `product_reviews` | `order_id` | `orders` | `id` | CASCADE |
+| `product_reviews` | `order_item_id` | `order_items` | `id` | CASCADE |
 | `product_images` | `product_id` | `products` | `id` | CASCADE |
 | `cart_items` | `user_id` | `users` | `id` | CASCADE |
 | `cart_items` | `product_id` | `products` | `id` | CASCADE |
@@ -688,7 +694,7 @@ orders (1) ←→ (N) product_reviews
 | `users` | `email` | Email harus unik |
 | `categories` | `slug` | Category slug harus unik |
 | `products` | `slug` | Product slug harus unik |
-| `product_reviews` | `product_id, user_id, order_id` | User hanya bisa review 1x per product per order |
+| `product_reviews` | `product_id, user_id, order_id, order_item_id` | User hanya bisa review 1x per item per order |
 | `cart_items` | `user_id, product_id` | User tidak bisa tambah produk yang sama 2x |
 | `orders` | `order_number` | Order number harus unik |
 | `failed_jobs` | `uuid` | Failed job UUID harus unik |
@@ -912,11 +918,18 @@ CREATE TABLE product_reviews (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT UNSIGNED NOT NULL,
     user_id BIGINT UNSIGNED NOT NULL,
-    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    review TEXT,
+    order_id BIGINT UNSIGNED NOT NULL,
+    order_item_id BIGINT UNSIGNED NULL,
+    rating TINYINT UNSIGNED NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT NULL,
+    is_verified_purchase BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP,
+    updated_at TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE,
+    UNIQUE KEY product_reviews_unique_constraint (product_id, user_id, order_id, order_item_id)
 );
 ```
 
