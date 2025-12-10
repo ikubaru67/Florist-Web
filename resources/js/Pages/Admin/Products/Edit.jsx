@@ -1,5 +1,4 @@
 import ShopLayout from '@/Layouts/ShopLayout';
-import CloudinaryUploadWidget from '@/Components/CloudinaryUploadWidget';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Edit({ auth, product, categories }) {
@@ -130,37 +129,21 @@ export default function Edit({ auth, product, categories }) {
                                 {/* Image URL */}
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Gambar Produk
+                                        URL Gambar Produk
                                     </label>
-                                    
-                                    <div className="space-y-3">
-                                        {/* Cloudinary Upload Widget */}
-                                        <CloudinaryUploadWidget
-                                            onUploadSuccess={(result) => setData('image', result.url)}
-                                            buttonText="Upload dari Device"
-                                        />
-                                        
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 h-px bg-gray-300"></div>
-                                            <span className="text-sm text-gray-500">atau</span>
-                                            <div className="flex-1 h-px bg-gray-300"></div>
-                                        </div>
-                                        
-                                        {/* Manual URL Input */}
-                                        <input
-                                            type="url"
-                                            value={data.image}
-                                            onChange={(e) => setData('image', e.target.value)}
-                                            className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            placeholder="Atau paste URL gambar (https://...)"
-                                        />
-                                    </div>
-                                    
+                                    <input
+                                        type="url"
+                                        value={data.image}
+                                        onChange={(e) => setData('image', e.target.value)}
+                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="https://res.cloudinary.com/... atau URL gambar lainnya"
+                                    />
                                     {errors.image && (
                                         <p className="text-red-500 text-sm mt-1">{errors.image}</p>
                                     )}
-                                    
-                                    {/* Image Preview */}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        💡 Upload gambar ke <a href="https://cloudinary.com" target="_blank" className="text-blue-600 hover:underline">Cloudinary</a> lalu paste URL-nya di sini
+                                    </p>
                                     {data.image && (
                                         <div className="mt-3">
                                             <p className="text-sm text-gray-600 mb-2">Preview:</p>
