@@ -61,12 +61,10 @@ export default function OrdersIndex({ auth, orders }) {
             order_id: selectedItem.order_id,
             order_item_id: selectedItem.id
         }, {
-            preserveScroll: false,
             onSuccess: (page) => {
                 console.log('Review submitted successfully!', page);
                 handleCloseReview();
-                // Reload current page to refresh order data with reviews
-                router.reload({ only: ['orders'] });
+                // Inertia will handle redirect automatically
             },
             onError: (errors) => {
                 console.log('Review submission errors:', errors);

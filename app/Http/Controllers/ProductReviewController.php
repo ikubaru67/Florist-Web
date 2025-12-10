@@ -121,7 +121,8 @@ class ProductReviewController extends Controller
                 'user_id' => Auth::id(),
                 'order_id' => $order->id
             ]);
-            return back()->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
+            return redirect()->route('orders.index')
+                ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
 
         $review = ProductReview::create([
@@ -136,8 +137,9 @@ class ProductReviewController extends Controller
 
         \Log::info('Review created successfully', ['review_id' => $review->id]);
 
-        // For Inertia requests, return back with success message
-        return back()->with('success', 'Review berhasil ditambahkan. Terima kasih!');
+        // Return redirect to orders page for Inertia
+        return redirect()->route('orders.index')
+            ->with('success', 'Review berhasil ditambahkan. Terima kasih!');
     }
 
     /**
