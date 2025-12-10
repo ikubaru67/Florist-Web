@@ -2,8 +2,9 @@ import { Link } from '@inertiajs/react';
 import StarRating from './StarRating';
 
 export default function ProductCard({ product }) {
-    const averageRating = product.reviews_avg_rating || 0;
-    const reviewsCount = product.reviews_count || 0;
+    // Convert ratings to numbers
+    const averageRating = parseFloat(product.reviews_avg_rating) || 0;
+    const reviewsCount = parseInt(product.reviews_count) || 0;
 
     return (
         <Link

@@ -1,6 +1,9 @@
 import React from 'react';
 
 export default function StarRating({ rating, maxRating = 5, size = 'md', showNumber = true, interactive = false, onChange = null }) {
+    // Convert rating to number and ensure it's valid
+    const numericRating = parseFloat(rating) || 0;
+    
     const sizes = {
         sm: 'w-4 h-4',
         md: 'w-5 h-5',
@@ -18,8 +21,8 @@ export default function StarRating({ rating, maxRating = 5, size = 'md', showNum
         <div className="flex items-center gap-1">
             {[...Array(maxRating)].map((_, index) => {
                 const starValue = index + 1;
-                const isFilled = starValue <= Math.floor(rating);
-                const isHalf = starValue === Math.ceil(rating) && rating % 1 !== 0;
+                const isFilled = starValue <= Math.floor(numericRating);
+                const isHalf = starValue === Math.ceil(numericRating) && numericRating % 1 !== 0;
 
                 return (
                     <button
@@ -53,7 +56,7 @@ export default function StarRating({ rating, maxRating = 5, size = 'md', showNum
             })}
             {showNumber && (
                 <span className="ml-1 text-sm text-gray-600">
-                    {rating > 0 ? rating.toFixed(1) : '0.0'}
+                    {numericRating > 0 ? numericRating.toFixed(1) : '0.0'}
                 </span>
             )}
         </div>

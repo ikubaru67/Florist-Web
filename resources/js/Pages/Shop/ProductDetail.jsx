@@ -11,8 +11,9 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
     const [processing, setProcessing] = useState(false);
     const [showReviewForm, setShowReviewForm] = useState(false);
 
-    const averageRating = product.reviews_avg_rating || 0;
-    const reviewsCount = product.reviews_count || 0;
+    // Convert ratings to numbers
+    const averageRating = parseFloat(product.reviews_avg_rating) || 0;
+    const reviewsCount = parseInt(product.reviews_count) || 0;
 
     const handleAddToCart = () => {
         if (!auth?.user) {

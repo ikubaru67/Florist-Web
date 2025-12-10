@@ -2,6 +2,9 @@ import React from 'react';
 import StarRating from './StarRating';
 
 export default function ReviewList({ reviews, averageRating, totalReviews }) {
+    // Convert averageRating to number
+    const numericRating = parseFloat(averageRating) || 0;
+    
     if (!reviews || reviews.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -18,9 +21,9 @@ export default function ReviewList({ reviews, averageRating, totalReviews }) {
                 <div className="flex items-center gap-4">
                     <div className="text-center">
                         <div className="text-4xl font-bold text-gray-900">
-                            {averageRating ? averageRating.toFixed(1) : '0.0'}
+                            {numericRating > 0 ? numericRating.toFixed(1) : '0.0'}
                         </div>
-                        <StarRating rating={averageRating || 0} size="md" showNumber={false} />
+                        <StarRating rating={numericRating} size="md" showNumber={false} />
                         <p className="text-sm text-gray-600 mt-1">
                             {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
                         </p>
