@@ -1,12 +1,12 @@
-# 🌸 Florist Shop Website
+# Florist Shop Website
 
 Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien.
 
-> 📚 **Developer Guide**: Untuk panduan teknis, setup, dan pengembangan, lihat [DEV-README.md](DEV-README.md)
+ **Developer Guide**: Untuk panduan teknis, setup, dan pengembangan, lihat [DEV-README.md](DEV-README.md)
 
 ---
 
-## ✨ User Features
+## User Features
 
 1. **Authentication**
    - Register dengan verifikasi email (OTP 6 digit)
@@ -48,7 +48,7 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
 
 ---
 
-## 📱 User Flow
+## User Flow
 
 ### **1. Register & Verifikasi Email**
 ```
@@ -117,7 +117,7 @@ User klik salah satu produk
   ↓
 User pilih jumlah produk (quantity selector)
   ↓
-User klik tombol "⚡ Beli Sekarang"
+User klik tombol "Beli Sekarang"
   ↓
 Form order otomatis terisi data user:
   - Nama
@@ -246,7 +246,7 @@ Password berhasil diubah ✅
 
 ---
 
-## 🔐 Admin Features
+## Admin Features
 
 1. **Dashboard**
    - Melihat list semua pesanan
@@ -280,7 +280,7 @@ Password berhasil diubah ✅
 
 ---
 
-## 👨‍💼 Admin Flow
+## Admin Flow
 
 ### **1. Admin Login Flow**
 ```
@@ -456,7 +456,7 @@ Hasil pencarian ditampilkan
 
 ---
 
-## 📊 Status Reference
+## Status Reference
 
 ### **Order Status**
 | Status       | Deskripsi                          | Badge Color |
@@ -483,10 +483,10 @@ Hasil pencarian ditampilkan
 
 ---
 
-## 📝 Important Notes
+## Important Notes
 
 ### **Payment Flow**
-- ⚠️ **Pembayaran dilakukan via WhatsApp**, bukan di website
+- **Pembayaran dilakukan via WhatsApp**, bukan di website
 - Website berfungsi sebagai katalog & sistem pemesanan
 - Admin konfirmasi pembayaran manual via chat WhatsApp
 - Setelah customer transfer → kirim bukti via WA → Admin accept order
