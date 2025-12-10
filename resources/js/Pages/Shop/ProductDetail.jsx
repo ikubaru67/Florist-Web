@@ -1,11 +1,18 @@
 import ShopLayout from '@/Layouts/ShopLayout';
 import ProductCard from '@/Components/ProductCard';
+import StarRating from '@/Components/StarRating';
+import ReviewList from '@/Components/ReviewList';
+import ReviewForm from '@/Components/ReviewForm';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function ProductDetail({ auth, product, relatedProducts }) {
+export default function ProductDetail({ auth, product, relatedProducts, canReview, userOrder }) {
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+
+    const averageRating = product.reviews_avg_rating || 0;
+    const reviewsCount = product.reviews_count || 0;
 
     const handleAddToCart = () => {
         if (!auth?.user) {
@@ -73,6 +80,15 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                     {/* Product Info */}
                     <div className="order-2">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                        
+                        {/* Rating Display */}
+                        <div className="flex items-center gap-4 mb-3">
+                            <StarRating rating={averageRating} size="md" showNumber={true} />
+                            <span className="text-sm text-gray-600">
+                                ({reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'})
+                            </span>
+                        </div>
+
                         <p className="text-sm text-gray-600 mb-4">
                             Kategori: <span className="text-pink-600">{product.category.name}</span>
                         </p>
@@ -145,6 +161,54 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                             </div>
                         )}
                     </div>
+                </div>
+
+                {/* Reviews Section */}
+                <div className="mt-12 sm:mt-16">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
+                        ⭐ Rating & Review
+                    </h2>
+
+                    {/* Review Form for Eligible Users */}
+                    {canReview && !showReviewForm && (
+                        <div className="mb-6">
+                            <button
+                                onClick={() => setShowReviewForm(true)}
+                                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors"
+                            >
+                                ✍️ Tulis Review Anda
+                            </button>
+                            <p className="text-sm text-gray-600 mt-2">
+                                Anda telah membeli produk ini. Bagikan pengalaman Anda!
+                            </p>
+                        </div>
+                    )}
+
+                    {showReviewForm && canReview && userOrder && (
+                        <div className="mb-8">
+                            <ReviewForm
+                                product={product}
+                                orderId={userOrder.id}
+                                onSuccess={() => {
+                                    setShowReviewForm(false);
+                                    window.location.reload();
+                                }}
+                            />
+                            <button
+                                onClick={() => setShowReviewForm(false)}
+                                className="text-sm text-gray-600 hover:text-gray-800 mt-2"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Reviews List */}
+                    <ReviewList
+                        reviews={product.reviews || []}
+                        averageRating={averageRating}
+                        totalReviews={reviewsCount}
+                    />
                 </div>
 
                 {/* Related Products */}
