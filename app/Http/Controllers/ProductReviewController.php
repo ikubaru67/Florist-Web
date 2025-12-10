@@ -80,12 +80,20 @@ class ProductReviewController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        \Log::info('Review submission started', [
+            'product_id' => $productId,
+            'user_id' => Auth::id(),
+            'request_data' => $request->all()
+        ]);
+
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
             'order_item_id' => 'nullable|exists:order_items,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000'
         ]);
+
+        \Log::info('Validation passed', ['validated' => $validated]);
 
         $product = Product::findOrFail($productId);
 
@@ -108,10 +116,15 @@ class ProductReviewController extends Controller
         }
         
         if ($existingReviewQuery->exists()) {
+            \Log::warning('Review already exists', [
+                'product_id' => $productId,
+                'user_id' => Auth::id(),
+                'order_id' => $order->id
+            ]);
             return back()->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
 
-        ProductReview::create([
+        $review = ProductReview::create([
             'product_id' => $productId,
             'user_id' => Auth::id(),
             'order_id' => $order->id,
@@ -120,6 +133,8 @@ class ProductReviewController extends Controller
             'comment' => $validated['comment'],
             'is_verified_purchase' => true
         ]);
+
+        \Log::info('Review created successfully', ['review_id' => $review->id]);
 
         // For Inertia requests, return back with success message
         return back()->with('success', 'Review berhasil ditambahkan. Terima kasih!');

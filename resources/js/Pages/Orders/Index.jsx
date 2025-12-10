@@ -46,6 +46,14 @@ export default function OrdersIndex({ auth, orders }) {
     const handleSubmitReview = (e) => {
         e.preventDefault();
         
+        console.log('Submitting review with data:', {
+            product_id: selectedItem.product_id,
+            rating: data.rating,
+            comment: data.comment,
+            order_id: selectedItem.order_id,
+            order_item_id: selectedItem.id
+        });
+        
         // Inertia post: (url, data, options)
         post(`/products/${selectedItem.product_id}/reviews`, {
             rating: data.rating,
@@ -55,12 +63,16 @@ export default function OrdersIndex({ auth, orders }) {
         }, {
             preserveScroll: false,
             onSuccess: (page) => {
+                console.log('Review submitted successfully!', page);
                 handleCloseReview();
                 // Reload current page to refresh order data with reviews
                 router.reload({ only: ['orders'] });
             },
             onError: (errors) => {
                 console.log('Review submission errors:', errors);
+            },
+            onFinish: () => {
+                console.log('Review submission finished');
             }
         });
     };
