@@ -107,19 +107,29 @@ class ProductReviewController extends Controller
             ->firstOrFail();
 
         // Check if already reviewed for this order+product combination
-        $existingReviewQuery = ProductReview::where('user_id', Auth::id())
+        // Need to check both: review with specific order_item_id OR review without order_item_id (from product page)
+        $existingReview = ProductReview::where('user_id', Auth::id())
             ->where('product_id', $productId)
-            ->where('order_id', $order->id);
+            ->where('order_id', $order->id)
+            ->where(function($query) use ($validated) {
+                if (isset($validated['order_item_id'])) {
+                    // Check if this specific item was reviewed OR if product was reviewed from product page
+                    $query->where('order_item_id', $validated['order_item_id'])
+                          ->orWhereNull('order_item_id');
+                } else {
+                    // Reviewing from product page - check if any review exists for this order+product
+                    $query->whereNull('order_item_id')
+                          ->orWhereNotNull('order_item_id');
+                }
+            })
+            ->exists();
         
-        if (isset($validated['order_item_id'])) {
-            $existingReviewQuery->where('order_item_id', $validated['order_item_id']);
-        }
-        
-        if ($existingReviewQuery->exists()) {
+        if ($existingReview) {
             \Log::warning('Review already exists', [
                 'product_id' => $productId,
                 'user_id' => Auth::id(),
-                'order_id' => $order->id
+                'order_id' => $order->id,
+                'order_item_id' => $validated['order_item_id'] ?? null
             ]);
             return redirect()->route('orders.index')
                 ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
