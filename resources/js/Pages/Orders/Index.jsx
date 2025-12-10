@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import StarRating from '@/Components/StarRating';
 
-export default function OrdersIndex({ auth, orders }) {
+export default function OrdersIndex({ auth, orders, activeTab = 'all' }) {
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [reviewData, setReviewData] = useState({
@@ -12,6 +12,20 @@ export default function OrdersIndex({ auth, orders }) {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+
+    const tabs = [
+        { key: 'all', label: 'Semua', icon: '📦' },
+        { key: 'processing', label: 'Diproses', icon: '⏳' },
+        { key: 'completed', label: 'Selesai', icon: '✅' },
+        { key: 'need_review', label: 'Perlu Rating', icon: '⭐' }
+    ];
+
+    const handleTabChange = (tabKey) => {
+        router.get('/orders', { tab: tabKey }, { 
+            preserveState: true,
+            preserveScroll: true 
+        });
+    };
 
     const getStatusBadge = (status) => {
         const colors = {
@@ -97,6 +111,29 @@ export default function OrdersIndex({ auth, orders }) {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Pesanan Saya</h1>
+
+                {/* Tabs Navigation */}
+                <div className="mb-6 border-b border-gray-200">
+                    <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => handleTabChange(tab.key)}
+                                className={`
+                                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                                    transition-colors duration-200 flex items-center gap-2
+                                    ${activeTab === tab.key
+                                        ? 'border-pink-500 text-pink-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    }
+                                `}
+                            >
+                                <span className="text-lg">{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
 
                 {orders.data.length > 0 ? (
                     <>
@@ -217,19 +254,53 @@ export default function OrdersIndex({ auth, orders }) {
                     </>
                 ) : (
                     <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                        <div className="text-6xl mb-4">📦</div>
-                        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-                            Belum Ada Pesanan
-                        </h2>
-                        <p className="text-gray-600 mb-8">
-                            Anda belum melakukan pemesanan
-                        </p>
-                        <Link
-                            href="/shop"
-                            className="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-pink-700"
-                        >
-                            Mulai Belanja
-                        </Link>
+                        {activeTab === 'need_review' ? (
+                            <>
+                                <div className="text-6xl mb-4">⭐</div>
+                                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                    Semua Produk Sudah Direview
+                                </h2>
+                                <p className="text-gray-600 mb-8">
+                                    Anda sudah memberikan rating untuk semua pesanan
+                                </p>
+                            </>
+                        ) : activeTab === 'completed' ? (
+                            <>
+                                <div className="text-6xl mb-4">✅</div>
+                                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                    Belum Ada Pesanan Selesai
+                                </h2>
+                                <p className="text-gray-600 mb-8">
+                                    Pesanan yang sudah selesai akan muncul di sini
+                                </p>
+                            </>
+                        ) : activeTab === 'processing' ? (
+                            <>
+                                <div className="text-6xl mb-4">⏳</div>
+                                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                    Tidak Ada Pesanan Diproses
+                                </h2>
+                                <p className="text-gray-600 mb-8">
+                                    Pesanan yang sedang diproses akan muncul di sini
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-6xl mb-4">📦</div>
+                                <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                                    Belum Ada Pesanan
+                                </h2>
+                                <p className="text-gray-600 mb-8">
+                                    Anda belum melakukan pemesanan
+                                </p>
+                                <Link
+                                    href="/shop"
+                                    className="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-pink-700"
+                                >
+                                    Mulai Belanja
+                                </Link>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

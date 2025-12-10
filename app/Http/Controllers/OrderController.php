@@ -105,15 +105,39 @@ class OrderController extends Controller
      * 
      * @return \Inertia\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['items.product', 'items.review'])
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->paginate(10);
+        $tab = $request->get('tab', 'all');
+        
+        $query = Order::with(['items.product', 'items.review'])
+            ->where('user_id', Auth::id());
+
+        // Filter based on active tab
+        switch ($tab) {
+            case 'processing':
+                $query->whereIn('status', ['pending', 'processing']);
+                break;
+            case 'completed':
+                $query->where('status', 'completed');
+                break;
+            case 'need_review':
+                // Orders that are completed and have items without reviews
+                $query->where('status', 'completed')
+                    ->whereHas('items', function($q) {
+                        $q->whereDoesntHave('review');
+                    });
+                break;
+            case 'all':
+            default:
+                // Show all orders
+                break;
+        }
+
+        $orders = $query->latest()->paginate(10);
 
         return Inertia::render('Orders/Index', [
-            'orders' => $orders
+            'orders' => $orders,
+            'activeTab' => $tab
         ]);
     }
 
