@@ -89,18 +89,26 @@ class ProductController extends Controller
         $userOrder = null;
         
         if (auth()->check()) {
-            $userOrder = \App\Models\Order::where('user_id', auth()->id())
+            // Cek apakah user punya order completed dengan produk ini
+            $completedOrder = \App\Models\Order::where('user_id', auth()->id())
                 ->where('status', 'completed')
                 ->whereHas('items', function($query) use ($product) {
                     $query->where('product_id', $product->id);
                 })
-                ->whereDoesntHave('reviews', function($query) use ($product) {
-                    $query->where('product_id', $product->id)
-                          ->where('user_id', auth()->id());
-                })
                 ->first();
             
-            $canReview = !is_null($userOrder);
+            if ($completedOrder) {
+                // Cek apakah user sudah pernah review produk ini dari order tersebut
+                $existingReview = \App\Models\ProductReview::where('product_id', $product->id)
+                    ->where('user_id', auth()->id())
+                    ->where('order_id', $completedOrder->id)
+                    ->exists();
+                
+                if (!$existingReview) {
+                    $canReview = true;
+                    $userOrder = $completedOrder;
+                }
+            }
         }
 
         return Inertia::render('Shop/ProductDetail', [
