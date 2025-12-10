@@ -215,8 +215,8 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-12 sm:mt-16">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Produk Terkait</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Produk Terkait</h2>
+                        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                             {relatedProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
                             ))}
