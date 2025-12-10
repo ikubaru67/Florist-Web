@@ -11,6 +11,8 @@ class HomeController extends Controller
     public function index()
     {
         $featuredProducts = Product::with('category')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->where('is_featured', true)
             ->where('is_active', true)
             ->limit(8)
@@ -21,6 +23,8 @@ class HomeController extends Controller
             ->get();
 
         $latestProducts = Product::with('category')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->where('is_active', true)
             ->latest()
             ->limit(8)

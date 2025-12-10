@@ -52,4 +52,26 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function productImages()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    // Average rating accessor
+    public function getAverageRatingAttribute()
+    {
+        return $this->reviews()->avg('rating') ?? 0;
+    }
+
+    // Total reviews count accessor
+    public function getReviewsCountAttribute()
+    {
+        return $this->reviews()->count();
+    }
 }

@@ -1,0 +1,158 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ProductReview;
+use App\Models\Order;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+
+class ProductReviewController extends Controller
+{
+    /**
+     * Display reviews for a specific product
+     */
+    public function index($productId)
+    {
+        $product = Product::with(['reviews.user'])->findOrFail($productId);
+        
+        $reviews = $product->reviews()
+            ->with('user')
+            ->latest()
+            ->paginate(10);
+
+        return response()->json([
+            'reviews' => $reviews,
+            'average_rating' => round($product->average_rating, 1),
+            'total_reviews' => $product->reviews_count
+        ]);
+    }
+
+    /**
+     * Show form to create review (check if user can review)
+     */
+    public function create($productId)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('error', 'Silakan login terlebih dahulu untuk memberikan review.');
+        }
+
+        $product = Product::findOrFail($productId);
+        
+        // Check if user has purchased this product
+        $hasPurchased = Order::where('user_id', Auth::id())
+            ->where('status', 'completed')
+            ->whereHas('items', function($query) use ($productId) {
+                $query->where('product_id', $productId);
+            })
+            ->exists();
+
+        if (!$hasPurchased) {
+            return redirect()->back()
+                ->with('error', 'Anda hanya bisa memberikan review untuk produk yang sudah dibeli.');
+        }
+
+        // Check if already reviewed
+        $existingReview = ProductReview::where('user_id', Auth::id())
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($existingReview) {
+            return redirect()->back()
+                ->with('info', 'Anda sudah memberikan review untuk produk ini.');
+        }
+
+        return Inertia::render('Product/Review', [
+            'product' => $product
+        ]);
+    }
+
+    /**
+     * Store a new review
+     */
+    public function store(Request $request, $productId)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')
+                ->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        $validated = $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000'
+        ]);
+
+        $product = Product::findOrFail($productId);
+
+        // Verify order belongs to user and contains the product
+        $order = Order::where('id', $validated['order_id'])
+            ->where('user_id', Auth::id())
+            ->where('status', 'completed')
+            ->whereHas('items', function($query) use ($productId) {
+                $query->where('product_id', $productId);
+            })
+            ->firstOrFail();
+
+        // Check if already reviewed
+        $existingReview = ProductReview::where('user_id', Auth::id())
+            ->where('product_id', $productId)
+            ->where('order_id', $order->id)
+            ->first();
+
+        if ($existingReview) {
+            return redirect()->back()
+                ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
+        }
+
+        ProductReview::create([
+            'product_id' => $productId,
+            'user_id' => Auth::id(),
+            'order_id' => $order->id,
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
+            'is_verified_purchase' => true
+        ]);
+
+        return redirect()->route('products.show', $product->slug)
+            ->with('success', 'Review berhasil ditambahkan. Terima kasih!');
+    }
+
+    /**
+     * Update existing review
+     */
+    public function update(Request $request, $reviewId)
+    {
+        $review = ProductReview::where('id', $reviewId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000'
+        ]);
+
+        $review->update($validated);
+
+        return redirect()->back()
+            ->with('success', 'Review berhasil diupdate.');
+    }
+
+    /**
+     * Delete review
+     */
+    public function destroy($reviewId)
+    {
+        $review = ProductReview::where('id', $reviewId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $review->delete();
+
+        return redirect()->back()
+            ->with('success', 'Review berhasil dihapus.');
+    }
+}

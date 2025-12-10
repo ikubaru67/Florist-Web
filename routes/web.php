@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\AdminOrderController;
@@ -35,6 +36,14 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Shop/Products (Katalog)
 Route::get('/shop', [ProductController::class, 'index'])->name('shop.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+// Product Reviews (Public can view, auth required for create)
+Route::get('/products/{product}/reviews', [ProductReviewController::class, 'index'])->name('reviews.index');
+Route::middleware('auth')->group(function () {
+    Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
+    Route::put('/reviews/{review}', [ProductReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.destroy');
+});
 
 // Orders (Authentication Required)
 Route::middleware('auth')->group(function () {

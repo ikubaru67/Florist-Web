@@ -11,7 +11,10 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category')->where('is_active', true);
+        $query = Product::with('category')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->where('is_active', true);
 
         // Filter by category
         if ($request->has('category')) {
@@ -57,7 +60,17 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        $product = Product::with('category')
+        $product = Product::with([
+                'category',
+                'productImages' => function($query) {
+                    $query->orderBy('sort_order');
+                },
+                'reviews' => function($query) {
+                    $query->with('user')->latest()->limit(10);
+                }
+            ])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
@@ -66,12 +79,35 @@ class ProductController extends Controller
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->limit(4)
             ->get();
 
+        // Check if current user can review this product
+        $canReview = false;
+        $userOrder = null;
+        
+        if (auth()->check()) {
+            $userOrder = \App\Models\Order::where('user_id', auth()->id())
+                ->where('status', 'completed')
+                ->whereHas('items', function($query) use ($product) {
+                    $query->where('product_id', $product->id);
+                })
+                ->whereDoesntHave('reviews', function($query) use ($product) {
+                    $query->where('product_id', $product->id)
+                          ->where('user_id', auth()->id());
+                })
+                ->first();
+            
+            $canReview = !is_null($userOrder);
+        }
+
         return Inertia::render('Shop/ProductDetail', [
             'product' => $product,
-            'relatedProducts' => $relatedProducts
+            'relatedProducts' => $relatedProducts,
+            'canReview' => $canReview,
+            'userOrder' => $userOrder
         ]);
     }
 }

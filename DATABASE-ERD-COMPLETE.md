@@ -5,9 +5,9 @@
 **Database Name:** `florist`  
 **Engine:** InnoDB  
 **Charset:** utf8mb4_unicode_ci  
-**Total Tables:** 13 tables *(buyers table removed - tidak digunakan)*  
+**Total Tables:** 15 tables *(product_reviews & product_images added)*  
 **Laravel Version:** 11.x  
-**Last Updated:** December 4, 2025
+**Last Updated:** December 10, 2025
 
 ---
 
@@ -55,6 +55,8 @@ erDiagram
 
     products ||--o{ cart_items : "added to"
     products ||--o{ order_items : "included in"
+    products ||--o{ product_reviews : "has reviews"
+    products ||--o{ product_images : "has images"
     products {
         bigint id PK
         bigint category_id FK "→categories.id"
@@ -70,6 +72,31 @@ erDiagram
         timestamps created_at
         timestamps updated_at
     }
+
+    product_reviews {
+        bigint id PK
+        bigint product_id FK "→products.id"
+        bigint user_id FK "→users.id"
+        bigint order_id FK "→orders.id"
+        tinyint rating "1-5 stars"
+        text comment
+        boolean is_verified_purchase
+        timestamps created_at
+        timestamps updated_at
+    }
+
+    product_images {
+        bigint id PK
+        bigint product_id FK "→products.id"
+        string image_path
+        int sort_order
+        boolean is_primary
+        timestamps created_at
+        timestamps updated_at
+    }
+
+    users ||--o{ product_reviews : "writes"
+    orders ||--o{ product_reviews : "can be reviewed"
 
     cart_items {
         bigint id PK
@@ -183,16 +210,18 @@ erDiagram
 | 1 | `users` | Core | User accounts (admin & customer) |
 | 2 | `categories` | Core | Product categories |
 | 3 | `products` | Core | Product catalog |
-| 4 | `cart_items` | Core | Shopping cart |
-| 5 | `orders` | Core | Customer orders |
-| 6 | `order_items` | Core | Order line items |
-| 7 | `password_reset_tokens` | Auth | Password reset tokens |
-| 8 | `sessions` | System | User sessions |
-| 9 | `jobs` | Queue | Background jobs |
-| 10 | `job_batches` | Queue | Job batching |
-| 11 | `failed_jobs` | Queue | Failed job logs |
-| 12 | `cache` | System | Application cache |
-| 13 | `cache_locks` | System | Cache locking |
+| 4 | `product_reviews` | Core | Product ratings & reviews |
+| 5 | `product_images` | Core | Product image gallery |
+| 6 | `cart_items` | Core | Shopping cart |
+| 7 | `orders` | Core | Customer orders |
+| 8 | `order_items` | Core | Order line items |
+| 9 | `password_reset_tokens` | Auth | Password reset tokens |
+| 10 | `sessions` | System | User sessions |
+| 11 | `jobs` | Queue | Background jobs |
+| 12 | `job_batches` | Queue | Job batching |
+| 13 | `failed_jobs` | Queue | Failed job logs |
+| 14 | `cache` | System | Application cache |
+| 15 | `cache_locks` | System | Cache locking |
 
 ---
 
@@ -282,6 +311,8 @@ Katalog produk bunga
 - Belongs To `categories` (N:1)
 - Has Many `cart_items` (1:N)
 - Has Many `order_items` (1:N)
+- Has Many `product_reviews` (1:N)
+- Has Many `product_images` (1:N)
 
 **Foreign Keys:**
 - `category_id` → `categories(id)` ON DELETE CASCADE
@@ -298,7 +329,95 @@ Katalog produk bunga
 
 ---
 
-### 4. **cart_items** (Shopping Cart)
+### 4. **product_reviews** (Product Ratings & Reviews)
+Review dan rating produk dari customer
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `product_id` | BIGINT UNSIGNED | FK → products.id, NOT NULL | Product reference |
+| `user_id` | BIGINT UNSIGNED | FK → users.id, NOT NULL | User reference |
+| `order_id` | BIGINT UNSIGNED | FK → orders.id, NOT NULL | Order reference (verified purchase) |
+| `rating` | TINYINT UNSIGNED | NOT NULL, 1-5 | Rating bintang (1-5) |
+| `comment` | TEXT | NULLABLE | Komentar/review text |
+| `is_verified_purchase` | BOOLEAN | DEFAULT TRUE | Verified purchase badge |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu review dibuat |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu review diupdate |
+
+**Relationships:**
+- Belongs To `products` (N:1)
+- Belongs To `users` (N:1)
+- Belongs To `orders` (N:1)
+
+**Foreign Keys:**
+- `product_id` → `products(id)` ON DELETE CASCADE
+- `user_id` → `users(id)` ON DELETE CASCADE
+- `order_id` → `orders(id)` ON DELETE CASCADE
+
+**Unique Constraints:**
+- UNIQUE KEY (`product_id`, `user_id`, `order_id`) - Satu user hanya bisa review 1x per product per order
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`product_id`) - Fast lookup reviews by product
+- INDEX (`rating`) - Filter by rating
+
+**Business Rules:**
+- Hanya user yang sudah membeli (order status = completed) yang bisa review
+- Rating harus 1-5 (integer)
+- User bisa update/delete review miliknya sendiri
+- Admin bisa hapus review tidak pantas
+
+**Sample Calculation:**
+```sql
+-- Average rating per product
+SELECT product_id, AVG(rating) as avg_rating, COUNT(*) as total_reviews
+FROM product_reviews
+GROUP BY product_id;
+```
+
+---
+
+### 5. **product_images** (Product Image Gallery)
+Multiple images untuk setiap produk
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `product_id` | BIGINT UNSIGNED | FK → products.id, NOT NULL | Product reference |
+| `image_path` | VARCHAR(255) | NOT NULL | Path/URL gambar |
+| `sort_order` | INT | DEFAULT 0 | Urutan tampilan (0 = pertama) |
+| `is_primary` | BOOLEAN | DEFAULT FALSE | Primary/thumbnail image |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu upload |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To `products` (N:1)
+
+**Foreign Keys:**
+- `product_id` → `products(id)` ON DELETE CASCADE
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`product_id`, `sort_order`) - Ordered retrieval
+
+**Business Rules:**
+- Setiap produk harus minimal punya 1 image (is_primary=true)
+- sort_order menentukan urutan di gallery (ASC)
+- Gambar primary digunakan untuk thumbnail di katalog
+- Jika produk dihapus, semua images ikut terhapus (CASCADE)
+
+**Sample Query:**
+```sql
+-- Get all images for a product, ordered
+SELECT * FROM product_images 
+WHERE product_id = 1 
+ORDER BY is_primary DESC, sort_order ASC;
+```
+
+---
+
+### 6. **cart_items** (Shopping Cart)
 Keranjang belanja user
 
 | Column | Type | Constraints | Description |
@@ -329,7 +448,7 @@ Keranjang belanja user
 
 ---
 
-### 5. **orders** (Customer Orders)
+### 7. **orders** (Customer Orders)
 Pesanan customer
 
 | Column | Type | Constraints | Description |
@@ -533,10 +652,14 @@ Distributed locks Laravel
 ```
 users (1) ←→ (N) cart_items
 users (1) ←→ (N) orders
+users (1) ←→ (N) product_reviews
 categories (1) ←→ (N) products
 products (1) ←→ (N) cart_items
 products (1) ←→ (N) order_items
+products (1) ←→ (N) product_reviews
+products (1) ←→ (N) product_images
 orders (1) ←→ (N) order_items
+orders (1) ←→ (N) product_reviews
 ```
 
 ---
@@ -546,6 +669,10 @@ orders (1) ←→ (N) order_items
 | Child Table | Child Column | Parent Table | Parent Column | On Delete |
 |-------------|--------------|--------------|---------------|-----------|
 | `products` | `category_id` | `categories` | `id` | CASCADE |
+| `product_reviews` | `product_id` | `products` | `id` | CASCADE |
+| `product_reviews` | `user_id` | `users` | `id` | CASCADE |
+| `product_reviews` | `order_id` | `orders` | `id` | CASCADE |
+| `product_images` | `product_id` | `products` | `id` | CASCADE |
 | `cart_items` | `user_id` | `users` | `id` | CASCADE |
 | `cart_items` | `product_id` | `products` | `id` | CASCADE |
 | `orders` | `user_id` | `users` | `id` | CASCADE |
@@ -561,6 +688,7 @@ orders (1) ←→ (N) order_items
 | `users` | `email` | Email harus unik |
 | `categories` | `slug` | Category slug harus unik |
 | `products` | `slug` | Product slug harus unik |
+| `product_reviews` | `product_id, user_id, order_id` | User hanya bisa review 1x per product per order |
 | `cart_items` | `user_id, product_id` | User tidak bisa tambah produk yang sama 2x |
 | `orders` | `order_number` | Order number harus unik |
 | `failed_jobs` | `uuid` | Failed job UUID harus unik |
@@ -576,6 +704,8 @@ Based on seeders:
 | users | 2 (1 admin, 1 user) | InnoDB |
 | categories | 5 | InnoDB |
 | products | 20 | InnoDB |
+| product_reviews | 0 (dynamic) | InnoDB |
+| product_images | 0 (dynamic) | InnoDB |
 | cart_items | 0 (dynamic) | InnoDB |
 | orders | 0 (dynamic) | InnoDB |
 | order_items | 0 (dynamic) | InnoDB |
@@ -583,6 +713,8 @@ Based on seeders:
 **Production Estimates (6 months):**
 - users: 100-1,000
 - products: 50-500
+- product_reviews: 200-2,000 (40% conversion dari orders)
+- product_images: 150-1,500 (3 images per product avg)
 - orders: 500-5,000
 - order_items: 1,000-20,000
 
