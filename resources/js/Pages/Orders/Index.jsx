@@ -46,31 +46,39 @@ export default function OrdersIndex({ auth, orders }) {
     const handleSubmitReview = (e) => {
         e.preventDefault();
         
-        console.log('Submitting review with data:', {
-            product_id: selectedItem.product_id,
+        const reviewData = {
             rating: data.rating,
             comment: data.comment,
             order_id: selectedItem.order_id,
             order_item_id: selectedItem.id
-        });
+        };
+        
+        console.log('=== REVIEW SUBMISSION START ===');
+        console.log('Product ID:', selectedItem.product_id);
+        console.log('Review Data:', reviewData);
+        console.log('URL:', `/products/${selectedItem.product_id}/reviews`);
         
         // Inertia post: (url, data, options)
-        post(`/products/${selectedItem.product_id}/reviews`, {
-            rating: data.rating,
-            comment: data.comment,
-            order_id: selectedItem.order_id,
-            order_item_id: selectedItem.id
-        }, {
+        post(`/products/${selectedItem.product_id}/reviews`, reviewData, {
+            onBefore: () => {
+                console.log('onBefore: Request about to be sent');
+            },
+            onStart: () => {
+                console.log('onStart: Request started');
+            },
+            onProgress: (progress) => {
+                console.log('onProgress:', progress);
+            },
             onSuccess: (page) => {
-                console.log('Review submitted successfully!', page);
-                handleCloseReview();
-                // Inertia will handle redirect automatically
+                console.log('onSuccess: Review submitted!', page);
             },
             onError: (errors) => {
-                console.log('Review submission errors:', errors);
+                console.log('onError: Submission failed', errors);
             },
             onFinish: () => {
-                console.log('Review submission finished');
+                console.log('onFinish: Request finished');
+                handleCloseReview();
+                console.log('=== REVIEW SUBMISSION END ===');
             }
         });
     };
