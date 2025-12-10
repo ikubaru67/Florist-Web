@@ -82,6 +82,7 @@ class ProductReviewController extends Controller
 
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
+            'order_item_id' => 'nullable|exists:order_items,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000'
         ]);
@@ -97,13 +98,16 @@ class ProductReviewController extends Controller
             })
             ->firstOrFail();
 
-        // Check if already reviewed
+        // Check if already reviewed for this specific order item
         $existingReview = ProductReview::where('user_id', Auth::id())
             ->where('product_id', $productId)
-            ->where('order_id', $order->id)
-            ->first();
-
-        if ($existingReview) {
+            ->where('order_id', $order->id);
+        
+        if (isset($validated['order_item_id'])) {
+            $existingReview->where('order_item_id', $validated['order_item_id']);
+        }
+        
+        if ($existingReview->exists()) {
             return redirect()->back()
                 ->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
@@ -112,12 +116,13 @@ class ProductReviewController extends Controller
             'product_id' => $productId,
             'user_id' => Auth::id(),
             'order_id' => $order->id,
+            'order_item_id' => $validated['order_item_id'] ?? null,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'],
             'is_verified_purchase' => true
         ]);
 
-        return redirect()->route('products.show', $product->slug)
+        return redirect()->back()
             ->with('success', 'Review berhasil ditambahkan. Terima kasih!');
     }
 

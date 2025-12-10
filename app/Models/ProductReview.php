@@ -10,6 +10,7 @@ class ProductReview extends Model
         'product_id',
         'user_id',
         'order_id',
+        'order_item_id',
         'rating',
         'comment',
         'is_verified_purchase'
@@ -33,5 +34,10 @@ class ProductReview extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function orderItem()
+    {
+        return $this->belongsTo(OrderItem::class);
     }
 }
