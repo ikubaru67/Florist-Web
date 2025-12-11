@@ -2,11 +2,6 @@ import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function CartIndex({ auth, cartItems, total }) {
-    console.log('Cart Items:', cartItems);
-    console.log('Cart Items length:', cartItems?.length);
-    console.log('Cart Items type:', typeof cartItems);
-    console.log('Is Array?', Array.isArray(cartItems));
-    
     const updateQuantity = (itemId, quantity) => {
         router.patch(`/cart/${itemId}`, { quantity }, {
             preserveScroll: true

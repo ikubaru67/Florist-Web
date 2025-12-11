@@ -1,6 +1,6 @@
+import React, { useState } from 'react';
 import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
 
 export default function Show({ auth, order }) {
     const [showAcceptModal, setShowAcceptModal] = useState(false);
@@ -204,16 +204,42 @@ export default function Show({ auth, order }) {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {order.items.map((item) => (
-                                            <tr key={item.id}>
-                                                <td className="px-4 py-3 text-sm text-gray-900">{item.product_name}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-900">
-                                                    Rp {Number(item.price).toLocaleString('id-ID')}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-gray-900">{item.quantity}</td>
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                                                    Rp {Number(item.subtotal).toLocaleString('id-ID')}
-                                                </td>
-                                            </tr>
+                                            <React.Fragment key={item.id}>
+                                                {/* Main Product Row */}
+                                                <tr>
+                                                    <td className="px-4 py-3 text-sm text-gray-900">{item.product_name}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-900">
+                                                        Rp {Number(item.price).toLocaleString('id-ID')}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-900">{item.quantity}</td>
+                                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                                        Rp {Number(item.price * item.quantity).toLocaleString('id-ID')}
+                                                    </td>
+                                                </tr>
+                                                
+                                                {/* Add-ons Rows */}
+                                                {item.addon_data && item.addon_data.length > 0 && (
+                                                    item.addon_data.map((addon, idx) => (
+                                                        <tr key={`addon-${item.id}-${idx}`} className="bg-pink-50">
+                                                            <td className="px-4 py-2 text-sm text-gray-700 pl-8">
+                                                                <span className="text-pink-600">+</span> {addon.name}
+                                                                {addon.custom_message && (
+                                                                    <p className="text-xs text-gray-500 italic mt-1">
+                                                                        Pesan: "{addon.custom_message}"
+                                                                    </p>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-gray-700">
+                                                                Rp {Number(addon.price).toLocaleString('id-ID')}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-sm text-gray-700">{addon.quantity}</td>
+                                                            <td className="px-4 py-2 text-sm font-medium text-pink-600">
+                                                                Rp {Number(addon.price * addon.quantity).toLocaleString('id-ID')}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </React.Fragment>
                                         ))}
                                     </tbody>
                                     <tfoot className="bg-gray-50">

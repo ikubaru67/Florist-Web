@@ -27,10 +27,8 @@ export default function CartCheckout({ auth, cartItems, total, user }) {
         
         router.post('/cart/checkout', formData, {
             onSuccess: () => {
-                console.log('Checkout success');
             },
             onError: (errors) => {
-                console.error('Checkout error:', errors);
                 alert('Gagal membuat pesanan: ' + (errors.error || 'Silakan coba lagi'));
                 setProcessing(false);
             },
@@ -169,23 +167,47 @@ export default function CartCheckout({ auth, cartItems, total, user }) {
                             
                             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                                 {cartItems.map((item) => (
-                                    <div key={item.id} className="flex gap-3 pb-3 border-b last:border-b-0">
-                                        <img
-                                            src={item.product.image || 'https://via.placeholder.com/60'}
-                                            alt={item.product.name}
-                                            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-xs sm:text-sm text-gray-900 truncate">
-                                                {item.product.name}
-                                            </p>
-                                            <p className="text-xs sm:text-sm text-gray-600">
-                                                {item.quantity} x Rp {Number(item.price).toLocaleString('id-ID')}
-                                            </p>
-                                            <p className="text-xs sm:text-sm font-semibold text-pink-600">
-                                                Rp {(item.quantity * item.price).toLocaleString('id-ID')}
-                                            </p>
+                                    <div key={item.id} className="pb-3 border-b last:border-b-0">
+                                        <div className="flex gap-3">
+                                            <img
+                                                src={item.product.image || 'https://via.placeholder.com/60'}
+                                                alt={item.product.name}
+                                                className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-xs sm:text-sm text-gray-900 truncate">
+                                                    {item.product.name}
+                                                </p>
+                                                <p className="text-xs sm:text-sm text-gray-600">
+                                                    {item.quantity} x Rp {Number(item.price).toLocaleString('id-ID')}
+                                                </p>
+                                                <p className="text-xs sm:text-sm font-semibold text-pink-600">
+                                                    Rp {(item.quantity * item.price).toLocaleString('id-ID')}
+                                                </p>
+                                            </div>
                                         </div>
+                                        
+                                        {/* Add-ons Display */}
+                                        {item.addons_detail && item.addons_detail.length > 0 && (
+                                            <div className="mt-2 ml-0 sm:ml-16 pl-3 border-l-2 border-pink-200 space-y-1">
+                                                {item.addons_detail.map((addon) => (
+                                                    <div key={addon.id} className="text-xs sm:text-sm">
+                                                        <p className="text-gray-700">
+                                                            <span className="font-medium">+ {addon.name}</span>
+                                                            <span className="text-gray-500"> ({addon.cart_quantity}x)</span>
+                                                        </p>
+                                                        <p className="text-pink-600">
+                                                            Rp {(addon.price * addon.cart_quantity).toLocaleString('id-ID')}
+                                                        </p>
+                                                        {addon.custom_message && (
+                                                            <p className="text-gray-500 italic text-xs mt-1">
+                                                                "{addon.custom_message}"
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

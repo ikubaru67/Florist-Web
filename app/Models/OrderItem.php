@@ -12,12 +12,14 @@ class OrderItem extends Model
         'product_name',
         'quantity',
         'price',
-        'subtotal'
+        'subtotal',
+        'addon_data'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'subtotal' => 'decimal:2'
+        'subtotal' => 'decimal:2',
+        'addon_data' => 'array'
     ];
 
     public function order()

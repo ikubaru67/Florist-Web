@@ -65,6 +65,11 @@ class ProductController extends Controller
                 'productImages' => function($query) {
                     $query->orderBy('sort_order');
                 },
+                'addons' => function($query) {
+                    $query->with(['images' => function($q) {
+                        $q->orderBy('sort_order');
+                    }])->orderBy('sort_order');
+                },
                 'reviews' => function($query) {
                     $query->with('user')->latest()->limit(10);
                 }

@@ -41,6 +41,7 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
   - Tab "Semua" - Semua pesanan
   - Tab "Diproses" - Pesanan pending/processing
   - Tab "Selesai" - Pesanan completed
+  - Tab "Dibatalkan" - Pesanan cancelled
   - Tab "Perlu Rating" - Item yang belum di-review
 - ✅ Verified purchase badge untuk review
 - ✅ Display average rating & total reviews per produk
@@ -65,7 +66,7 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
 - ✅ Form checkout dengan validasi (nama, email, phone, address)
 - ✅ Auto stock reduction setelah order
 - ✅ Invoice page setelah checkout berhasil
-- ✅ **Order history dengan tab navigation** (Semua, Diproses, Selesai, Perlu Rating)
+- ✅ **Order history dengan tab navigation** (Semua, Diproses, Selesai, Dibatalkan, Perlu Rating)
 - ✅ **Review produk langsung dari order history**
 - ✅ Display rating yang sudah diberikan di order history
 
@@ -131,7 +132,7 @@ Platform e-commerce toko bunga yang memungkinkan pelanggan untuk membeli produk 
 - ✅ Shopping cart dengan CRUD operations
 - ✅ Dual purchase options (direct buy + cart checkout)
 - ✅ **Product ratings & reviews system dengan dual entry point** (v1.1.0)
-- ✅ **Order history dengan 4-tab navigation & review integration** (v1.1.0)
+- ✅ **Order history dengan 5-tab navigation & review integration** (v1.1.1)
 - ✅ **Multiple product images gallery** (v1.1.0)
 - ✅ **Average rating display** di katalog dan detail
 - ✅ **Verified purchase reviews** untuk kredibilitas

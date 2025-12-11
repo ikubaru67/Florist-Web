@@ -63,6 +63,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    public function addons()
+    {
+        return $this->hasMany(ProductAddon::class)->orderBy('sort_order');
+    }
+
     // Average rating accessor
     public function getAverageRatingAttribute()
     {

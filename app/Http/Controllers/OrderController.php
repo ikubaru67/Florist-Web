@@ -120,6 +120,9 @@ class OrderController extends Controller
             case 'completed':
                 $query->where('status', 'completed');
                 break;
+            case 'cancelled':
+                $query->where('status', 'cancelled');
+                break;
             case 'need_review':
                 // Orders that are completed and have items without reviews
                 $query->where('status', 'completed')

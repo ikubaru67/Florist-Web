@@ -95,22 +95,46 @@ export default function OrderShow({ auth, order }) {
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Detail Produk</h2>
                     <div className="space-y-4">
                         {order.items.map((item) => (
-                            <div key={item.id} className="flex gap-4 pb-4 border-b last:border-b-0">
-                                <img
-                                    src={item.product?.image || 'https://via.placeholder.com/100'}
-                                    alt={item.product_name}
-                                    className="w-20 h-20 object-cover rounded"
-                                />
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
-                                    <p className="text-sm text-gray-600">
-                                        Rp {Number(item.price).toLocaleString('id-ID')} x {item.quantity}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-gray-900">
-                                        Rp {Number(item.subtotal).toLocaleString('id-ID')}
-                                    </p>
+                            <div key={item.id} className="pb-4 border-b last:border-b-0">
+                                <div className="flex gap-4">
+                                    <img
+                                        src={item.product?.image || 'https://via.placeholder.com/100'}
+                                        alt={item.product_name}
+                                        className="w-20 h-20 object-cover rounded flex-shrink-0"
+                                    />
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
+                                        <p className="text-sm text-gray-600">
+                                            Rp {Number(item.price).toLocaleString('id-ID')} x {item.quantity}
+                                        </p>
+                                        
+                                        {/* Add-ons Display */}
+                                        {item.addon_data && item.addon_data.length > 0 && (
+                                            <div className="mt-2 ml-4 space-y-1 border-l-2 border-pink-300 pl-3">
+                                                {item.addon_data.map((addon, addonIdx) => (
+                                                    <div key={addonIdx} className="text-sm">
+                                                        <p className="text-gray-700">
+                                                            <span className="text-pink-600">+</span> {addon.name} 
+                                                            <span className="text-gray-500"> ({addon.quantity}x)</span>
+                                                        </p>
+                                                        <p className="text-pink-600 text-xs">
+                                                            Rp {Number(addon.price * addon.quantity).toLocaleString('id-ID')}
+                                                        </p>
+                                                        {addon.custom_message && (
+                                                            <p className="italic text-gray-500 text-xs mt-1">
+                                                                "{addon.custom_message}"
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-gray-900">
+                                            Rp {Number(item.subtotal).toLocaleString('id-ID')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         ))}

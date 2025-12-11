@@ -10,11 +10,13 @@ class CartItem extends Model
         'user_id',
         'product_id',
         'quantity',
-        'price'
+        'price',
+        'addon_ids'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2'
+        'price' => 'decimal:2',
+        'addon_ids' => 'array'
     ];
 
     public function user()

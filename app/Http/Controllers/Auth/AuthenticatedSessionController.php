@@ -33,6 +33,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Handle "Remember Me" functionality
+        // If NOT checked, session expires when browser closes
+        // If checked, Laravel's Auth::attempt already set remember token
+        
         return redirect()->intended('/');
     }
 

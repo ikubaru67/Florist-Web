@@ -19,7 +19,7 @@ class CartController extends Controller
         $userId = Auth::id();
         Log::info('Cart Index - User ID: ' . $userId);
         
-        $cartItems = CartItem::with('product.category')
+        $cartItems = CartItem::with(['product.category', 'product.addons'])
             ->where('user_id', $userId)
             ->get()
             ->filter(function ($item) {
@@ -34,9 +34,33 @@ class CartController extends Controller
 
         Log::info('Cart Items Count: ' . $cartItems->count());
 
-        // Transform to include subtotal
+        // Transform to include subtotal and addon details
         $cartItems = $cartItems->map(function ($item) {
-            $item->subtotal = $item->quantity * $item->price;
+            // Calculate product subtotal
+            $productSubtotal = $item->quantity * $item->price;
+            
+            // Calculate addon subtotal
+            $addonSubtotal = 0;
+            if (!empty($item->addon_ids)) {
+                $addonIds = array_column($item->addon_ids, 'addon_id');
+                $addonsDetail = $item->product->addons->whereIn('id', $addonIds);
+                
+                foreach ($item->addon_ids as $addonItem) {
+                    $addon = $addonsDetail->firstWhere('id', $addonItem['addon_id']);
+                    if ($addon) {
+                        $addonSubtotal += $addon->price * $addonItem['quantity'];
+                    }
+                }
+                
+                $item->addons_detail = $addonsDetail->map(function($addon) use ($item) {
+                    $addonItem = collect($item->addon_ids)->firstWhere('addon_id', $addon->id);
+                    $addon->cart_quantity = $addonItem['quantity'] ?? 0;
+                    return $addon;
+                })->values();
+            }
+            
+            $item->subtotal = $productSubtotal + $addonSubtotal;
+            
             return $item;
         });
 
@@ -79,7 +103,11 @@ class CartController extends Controller
                             $fail("Stok tidak mencukupi. Stok tersedia: {$product->stock}");
                         }
                     },
-                ]
+                ],
+                'addon_items' => 'nullable|array',
+                'addon_items.*.addon_id' => 'required|exists:product_addons,id',
+                'addon_items.*.quantity' => 'required|integer|min:1',
+                'addon_items.*.custom_message' => 'nullable|string|max:500'
             ]);
             Log::info('Validation passed:', $validated);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -90,6 +118,37 @@ class CartController extends Controller
         Log::info('Product found:', ['id' => $product->id, 'name' => $product->name, 'stock' => $product->stock]);
 
         $quantity = $validated['quantity'];
+        $addonItems = $validated['addon_items'] ?? [];
+
+        // Validate and calculate addon prices (addons now have independent quantity)
+        $addonTotalPrice = 0;
+        $addonData = [];
+        
+        if (!empty($addonItems)) {
+            foreach ($addonItems as $item) {
+                $addon = \App\Models\ProductAddon::where('id', $item['addon_id'])
+                    ->where('product_id', $product->id)
+                    ->where('is_available', true)
+                    ->first();
+
+                if (!$addon) {
+                    return back()->with('error', "Add-on tidak ditemukan");
+                }
+
+                if ($addon->stock < $item['quantity']) {
+                    return back()->with('error', "Stok add-on '{$addon->name}' tidak mencukupi. Tersedia: {$addon->stock}");
+                }
+
+                $addonTotalPrice += $addon->price * $item['quantity'];
+                $addonData[] = [
+                    'addon_id' => $addon->id,
+                    'quantity' => $item['quantity'],
+                    'custom_message' => $item['custom_message'] ?? null
+                ];
+            }
+        }
+
+        $totalItemPrice = $product->price;
 
         // Check if product is active
         if (!$product->is_active) {
@@ -103,21 +162,50 @@ class CartController extends Controller
             return back()->with('error', 'Stok tidak mencukupi. Stok tersedia: ' . $product->stock);
         }
 
-        // Check if item already exists in cart
+        // Check if item already exists in cart (with same addon configuration)
         $existingCartItem = CartItem::where('user_id', Auth::id())
             ->where('product_id', $validated['product_id'])
-            ->first();
+            ->get()
+            ->first(function ($item) use ($addonData) {
+                $itemAddonData = $item->addon_ids ?? [];
+                
+                // Compare addon configurations
+                if (count($itemAddonData) !== count($addonData)) {
+                    return false;
+                }
+                
+                // Sort both arrays by addon_id for comparison
+                usort($itemAddonData, function($a, $b) {
+                    return $a['addon_id'] <=> $b['addon_id'];
+                });
+                usort($addonData, function($a, $b) {
+                    return $a['addon_id'] <=> $b['addon_id'];
+                });
+                
+                return $itemAddonData == $addonData;
+            });
 
         if ($existingCartItem) {
-            // Update existing cart item
+            // Update existing cart item - just increase quantity
             $newQuantity = $existingCartItem->quantity + $quantity;
             if ($product->stock < $newQuantity) {
                 Log::warning('Stock insufficient for update:', ['product_id' => $product->id, 'stock' => $product->stock, 'requested' => $newQuantity]);
                 return back()->with('error', 'Stok tidak mencukupi. Stok tersedia: ' . $product->stock);
             }
+            
+            // Also need to validate addon stock for new quantities
+            $existingAddonData = $existingCartItem->addon_ids ?? [];
+            foreach ($existingAddonData as $addonItem) {
+                $addon = \App\Models\ProductAddon::find($addonItem['addon_id']);
+                $newAddonQty = $addonItem['quantity'] + ($addonData[array_search($addonItem['addon_id'], array_column($addonData, 'addon_id'))]['quantity'] ?? 0);
+                if ($addon && $addon->stock < $newAddonQty) {
+                    return back()->with('error', "Stok add-on '{$addon->name}' tidak mencukupi");
+                }
+            }
+            
             $existingCartItem->update([
                 'quantity' => $newQuantity,
-                'price' => $product->price
+                'price' => $totalItemPrice
             ]);
             
             Log::info('Cart item updated:', ['cart_item_id' => $existingCartItem->id, 'new_quantity' => $newQuantity]);
@@ -128,10 +216,11 @@ class CartController extends Controller
                 'user_id' => Auth::id(),
                 'product_id' => $validated['product_id'],
                 'quantity' => $quantity,
-                'price' => $product->price
+                'price' => $totalItemPrice,
+                'addon_ids' => !empty($addonData) ? $addonData : null
             ]);
             
-            Log::info('New cart item created:', ['cart_item_id' => $cartItem->id, 'user_id' => Auth::id(), 'product_id' => $product->id, 'quantity' => $quantity]);
+            Log::info('New cart item created:', ['cart_item_id' => $cartItem->id, 'user_id' => Auth::id(), 'product_id' => $product->id, 'quantity' => $quantity, 'addons' => $addonData]);
             return back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
         }
     }
@@ -201,7 +290,7 @@ class CartController extends Controller
      */
     public function checkout()
     {
-        $cartItems = CartItem::with('product.category')
+        $cartItems = CartItem::with(['product.category', 'product.addons'])
             ->where('user_id', Auth::id())
             ->get();
 
@@ -209,16 +298,67 @@ class CartController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong!');
         }
 
-        // Check stock for all items
-        foreach ($cartItems as $item) {
-            if ($item->product->stock < $item->quantity) {
-                return redirect()->route('cart.index')->with('error', 
-                    'Stok tidak mencukupi untuk produk: ' . $item->product->name);
+        // Transform to include addon details and calculate proper subtotal
+        $cartItems = $cartItems->map(function ($item) {
+            
+            // Calculate product subtotal
+            $productSubtotal = $item->quantity * $item->price;
+            
+            // Calculate addon subtotal and prepare addon details
+            $addonSubtotal = 0;
+            $addonsDetail = [];
+            
+            if (!empty($item->addon_ids) && is_array($item->addon_ids)) {
+                $addonIds = array_column($item->addon_ids, 'addon_id');
+                
+                $addons = $item->product->addons->whereIn('id', $addonIds);
+                
+                foreach ($item->addon_ids as $addonItem) {
+                    $addon = $addons->firstWhere('id', $addonItem['addon_id']);
+                    if ($addon) {
+                        $addonSubtotal += $addon->price * $addonItem['quantity'];
+                        
+                        // Add to addons_detail array
+                        $addonsDetail[] = [
+                            'id' => $addon->id,
+                            'name' => $addon->name,
+                            'price' => (float)$addon->price,
+                            'cart_quantity' => $addonItem['quantity'],
+                            'custom_message' => $addonItem['custom_message'] ?? null,
+                        ];
+                    }
+                }
             }
             
-            if (!$item->product->is_active) {
+            // Convert to array to ensure proper serialization
+            return [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'price' => (float)$item->price,
+                'subtotal' => $productSubtotal + $addonSubtotal,
+                'product' => [
+                    'id' => $item->product->id,
+                    'name' => $item->product->name,
+                    'image' => $item->product->image,
+                    'slug' => $item->product->slug,
+                ],
+                'addons_detail' => $addonsDetail,
+            ];
+        });
+
+        // Check stock for all items
+        foreach ($cartItems as $item) {
+            $product = Product::find($item['product_id']);
+            
+            if ($product->stock < $item['quantity']) {
                 return redirect()->route('cart.index')->with('error', 
-                    'Produk tidak tersedia: ' . $item->product->name);
+                    'Stok tidak mencukupi untuk produk: ' . $product->name);
+            }
+            
+            if (!$product->is_active) {
+                return redirect()->route('cart.index')->with('error', 
+                    'Produk tidak tersedia: ' . $product->name);
             }
         }
 
@@ -226,7 +366,7 @@ class CartController extends Controller
         $total = $cartItems->sum('subtotal');
 
         return Inertia::render('CartCheckout', [
-            'cartItems' => $cartItems,
+            'cartItems' => $cartItems->values()->toArray(),
             'total' => $total,
             'user' => $user,
         ]);
@@ -298,14 +438,25 @@ class CartController extends Controller
             
             Log::info('Stock check passed with locks, total amount:', ['total' => $totalAmount]);
 
-            // Generate order number
-            $date = now()->format('Ymd');
-            $lastOrder = Order::whereDate('created_at', now()->toDateString())
-                ->latest('id')
-                ->first();
+            // Generate order number dengan retry untuk prevent race condition
+            $maxRetries = 5;
+            $orderNumber = null;
             
-            $sequence = $lastOrder ? intval(substr($lastOrder->order_number, -3)) + 1 : 1;
-            $orderNumber = 'ORD-' . $date . '-' . str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            for ($i = 0; $i < $maxRetries; $i++) {
+                $date = now()->format('Ymd');
+                $randomSuffix = strtoupper(substr(uniqid(), -6)); // 6 char random
+                $orderNumber = 'ORD-' . $date . '-' . $randomSuffix;
+                
+                // Check if exists (very unlikely with random suffix)
+                if (!Order::where('order_number', $orderNumber)->exists()) {
+                    break;
+                }
+            }
+            
+            // Fallback jika masih duplicate (almost impossible)
+            if (!$orderNumber || Order::where('order_number', $orderNumber)->exists()) {
+                $orderNumber = 'ORD-' . strtoupper(uniqid());
+            }
 
             Log::info('Creating order:', ['order_number' => $orderNumber]);
 
@@ -329,6 +480,25 @@ class CartController extends Controller
 
             // Create order items and update stock using locked products
             foreach ($cartItems as $index => $item) {
+                // Prepare addon data for order item (with independent quantities)
+                $addonData = [];
+                if (!empty($item->addon_ids)) {
+                    foreach ($item->addon_ids as $addonItem) {
+                        $addon = \App\Models\ProductAddon::find($addonItem['addon_id']);
+                        if ($addon) {
+                            $addonData[] = [
+                                'addon_id' => $addon->id,
+                                'name' => $addon->name,
+                                'price' => $addon->price,
+                                'quantity' => $addonItem['quantity'],
+                                'custom_message' => $addonItem['custom_message'] ?? null
+                            ];
+                            // Reduce addon stock by its specific quantity
+                            $addon->decrement('stock', $addonItem['quantity']);
+                        }
+                    }
+                }
+
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
@@ -336,6 +506,7 @@ class CartController extends Controller
                     'price' => $item->price,
                     'quantity' => $item->quantity,
                     'subtotal' => $item->subtotal,
+                    'addon_data' => !empty($addonData) ? $addonData : null,
                 ]);
 
                 // Reduce stock using the locked product reference

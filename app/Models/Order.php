@@ -32,7 +32,23 @@ class Order extends Model
 
         static::creating(function ($order) {
             if (empty($order->order_number)) {
-                $order->order_number = 'ORD-' . strtoupper(uniqid());
+                // Generate unique order number dengan retry mechanism
+                $maxRetries = 5;
+                
+                for ($i = 0; $i < $maxRetries; $i++) {
+                    $date = now()->format('Ymd');
+                    $randomSuffix = strtoupper(substr(uniqid() . bin2hex(random_bytes(3)), -6));
+                    $orderNumber = 'ORD-' . $date . '-' . $randomSuffix;
+                    
+                    // Check if exists (very unlikely with random suffix + random_bytes)
+                    if (!self::where('order_number', $orderNumber)->exists()) {
+                        $order->order_number = $orderNumber;
+                        return;
+                    }
+                }
+                
+                // Ultimate fallback (almost impossible to reach)
+                $order->order_number = 'ORD-' . strtoupper(uniqid() . bin2hex(random_bytes(4)));
             }
         });
     }

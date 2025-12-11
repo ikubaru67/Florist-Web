@@ -10,7 +10,7 @@ export default function ShopLayout({ children, auth }) {
             fetch('/cart/count')
                 .then(res => res.json())
                 .then(data => setCartCount(data.count))
-                .catch(err => console.error('Error fetching cart count:', err));
+                .catch(err => {});
         }
     }, [auth]);
 

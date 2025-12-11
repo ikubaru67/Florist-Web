@@ -80,20 +80,12 @@ class ProductReviewController extends Controller
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        \Log::info('Review submission started', [
-            'product_id' => $productId,
-            'user_id' => Auth::id(),
-            'request_data' => $request->all()
-        ]);
-
         $validated = $request->validate([
             'order_id' => 'required|exists:orders,id',
             'order_item_id' => 'nullable|exists:order_items,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000'
         ]);
-
-        \Log::info('Validation passed', ['validated' => $validated]);
 
         $product = Product::findOrFail($productId);
 
@@ -114,7 +106,6 @@ class ProductReviewController extends Controller
             
             if ($orderItem) {
                 $validated['order_item_id'] = $orderItem->id;
-                \Log::info('Auto-detected order_item_id', ['order_item_id' => $orderItem->id]);
             }
         }
 
@@ -137,12 +128,6 @@ class ProductReviewController extends Controller
             ->exists();
         
         if ($existingReview) {
-            \Log::warning('Review already exists', [
-                'product_id' => $productId,
-                'user_id' => Auth::id(),
-                'order_id' => $order->id,
-                'order_item_id' => $validated['order_item_id'] ?? null
-            ]);
             return back()->with('error', 'Anda sudah memberikan review untuk produk ini dari pesanan tersebut.');
         }
 
@@ -155,8 +140,6 @@ class ProductReviewController extends Controller
             'comment' => $validated['comment'],
             'is_verified_purchase' => true
         ]);
-
-        \Log::info('Review created successfully', ['review_id' => $review->id]);
 
         // Return redirect back to previous page (product page or orders page)
         return back()->with('success', 'Review berhasil ditambahkan. Terima kasih!');
