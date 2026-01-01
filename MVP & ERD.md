@@ -1,8 +1,8 @@
 # 🌸 Florist E-Commerce - MVP & ERD Documentation
 
 **Project Name:** Florist Shop  
-**Version:** 1.2.0  
-**Last Updated:** December 11, 2025  
+**Version:** 1.3.0  
+**Last Updated:** December 17, 2025  
 **Tech Stack:** Laravel 11 + React 18 + Inertia.js + Tailwind CSS
 
 ---
@@ -85,7 +85,7 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ Responsive design (1 col mobile → 4 cols desktop)
 
 **Detail Produk:**
-- ✅ **Multiple images gallery** dengan smooth transitions (NEW: v1.2.0)
+- ✅ **Multiple images gallery** dengan smooth transitions (v1.2.0)
 - ✅ Thumbnail gallery dengan selection
 - ✅ Lightbox image viewer dengan navigation arrows
 - ✅ Gambar produk (support URL dari Cloudinary/CDN)
@@ -93,10 +93,13 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ Deskripsi lengkap
 - ✅ **Rating & reviews** dengan star rating (1-5)
 - ✅ Average rating + total reviews
-- ✅ **Product Add-ons selection** (NEW: v1.2.0)
-  - Add-ons dengan independent quantity
+- ✅ **Product Add-ons selection** (v1.2.0 → v1.3.0 UPGRADED)
+  - **GLOBAL Add-ons** (tidak per-produk, bisa digunakan untuk multiple products)
+  - Dropdown selection dari add-ons yang tersedia
+  - Independent quantity per add-on
   - Custom message field untuk add-ons tertentu (greeting cards)
-  - Multiple images per add-on
+  - Multiple images per add-on (max 5)
+  - **Admin Image Editor**: Crop, zoom, rotate add-on images in-page
   - Total price breakdown (product + add-ons)
 - ✅ Quantity selector
 - ✅ Button: Add to Cart + Buy Now
@@ -123,23 +126,44 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 
 ---
 
-#### 3. Product Add-ons ➕ NEW! (v1.2.0)
-**Features:**
+#### 3. **Product Add-ons** ➕ (v1.2.0 → v1.3.0 UPGRADED)
+**MAJOR UPGRADE: Global Add-ons System**
+
+**Customer Features:**
 - ✅ User dapat memilih **add-ons** untuk produk (kartu ucapan, coklat, boneka, dll)
+- ✅ **Dropdown selection** dari add-ons yang tersedia (bukan checkboxes)
+- ✅ Button "Tambah Add-on" selalu terlihat (disabled jika semua add-on sudah dipilih)
 - ✅ **Independent quantity** untuk setiap add-on (tidak terikat quantity produk utama)
 - ✅ **Custom message field** untuk add-on tertentu (contoh: pesan di kartu ucapan)
-- ✅ **Multiple images per add-on** dengan gallery
+- ✅ **Multiple images per add-on** dengan gallery (max 5)
 - ✅ Lightbox viewer untuk preview add-on images
 - ✅ Add-ons terintegrasi dengan cart dan checkout
 - ✅ Total price otomatis termasuk harga add-ons
 - ✅ Add-ons tersimpan di order history (snapshot)
 
 **Admin Features:**
-- ✅ CRUD add-ons untuk setiap produk
+- ✅ **Global Add-ons Management** (1 add-on bisa digunakan untuk multiple products)
+- ✅ CRUD global add-ons dengan section khusus di admin panel
+- ✅ **Dropdown selection** untuk attach add-ons ke product (bukan create ulang)
+- ✅ **URL-based images** (Cloudinary/CDN integration)
+- ✅ **In-page Image Editor** untuk add-on images:
+  - Crop dengan aspect ratio bebas
+  - Zoom (1x-3x)
+  - Rotate (0°-360°)
+  - Auto-compress: max 800px, 80% quality
+  - Save as base64 data URL (support TEXT column)
 - ✅ Manage harga, stok, dan ketersediaan add-ons
-- ✅ Upload multiple images per add-on (max 5)
 - ✅ Enable/disable custom message per add-on
-- ✅ Sort order untuk tampilan add-ons
+- ✅ Available/unavailable status per add-on
+
+**Technical Improvements:**
+- ✅ **Many-to-Many relationship**: `products ↔ addons` (via `addon_product` pivot)
+- ✅ **Database Tables**:
+  - `addons` - Global add-ons storage
+  - `addon_product` - Pivot table for products ↔ addons
+  - `addon_images` - Images dengan TEXT column (support base64)
+- ✅ **Validation**: `exists:addons,id` untuk cart/checkout
+- ✅ **Image Storage**: URL (primary) + base64 data URLs (cropped images)
 
 **Business Rules:**
 - ✅ Add-ons optional (customer bisa skip)
@@ -147,6 +171,12 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ Stock validation untuk setiap add-on
 - ✅ Custom message max 500 karakter
 - ✅ Add-ons data tersimpan sebagai snapshot di order
+- ✅ Admin tidak perlu create ulang add-on untuk setiap produk
+
+**Upgrade Path (Dec 2025):**
+- **Before (v1.2.0)**: Product-specific add-ons (tabel `product_addons`)
+- **After (v1.3.0)**: Global add-ons dengan many-to-many relationship
+- **Migration**: `create_addons_table`, `create_addon_product_table`, `add_addon_id_to_addon_images_table`
 
 ---
 
@@ -259,13 +289,12 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ **URL Gambar Utama** (paste dari Cloudinary/CDN)
   - 💡 Helper text dengan link ke Cloudinary
   - 👁️ Real-time preview image
-- ✅ **Multiple Additional Images** (max 5) (NEW: v1.2.0)
-- ✅ **Product Add-ons Management** (NEW: v1.2.0)
-  - Nama, deskripsi, harga, stok add-on
-  - Multiple images per add-on (max 5)
-  - Enable custom message field per add-on
-  - Sort order untuk tampilan
-  - Available/unavailable status
+- ✅ **Multiple Additional Images** (max 5) (v1.2.0)
+- ✅ **Global Add-ons Selection** (v1.3.0 UPGRADED)
+  - **Dropdown selection** dari global add-ons pool
+  - Button "Tambah Add-on" (always visible, disabled when all added)
+  - Tidak perlu create add-on baru untuk setiap produk
+  - Remove add-on per product dengan confirmation
 - ✅ Featured product flag (boolean)
 - ✅ Active/inactive status (boolean)
 
@@ -297,10 +326,11 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ Order number (unique)
 - ✅ Customer information (name, email, phone, address)
 - ✅ Order items dengan quantity dan harga
-- ✅ **Add-ons per item** dengan quantities dan custom messages (NEW: v1.2.0)
+- ✅ **Add-ons per item** dengan quantities dan custom messages (v1.2.0)
 - ✅ Total amount (termasuk add-ons)
 - ✅ Order date & time
 - ✅ Payment status
+- ✅ **Order status display:** "Menunggu Pembayaran" untuk pending orders (v1.3.0)
 - ✅ Current status
 
 **Order Actions:**
@@ -309,9 +339,103 @@ Memungkinkan pelanggan untuk membeli produk bunga secara online dengan fitur ker
 - ✅ View detailed order information
 - ✅ Print/export invoice (future enhancement)
 
+**Customer Order View (Invoice):**
+- ✅ **WhatsApp Integration** (v1.3.0 NEW):
+  - WhatsApp button untuk pending orders
+  - Template message dengan:
+    - Order number dan tanggal
+    - Customer info lengkap (nama, email, phone, alamat)
+    - List produk dengan add-ons dan quantities
+    - Custom messages dari add-ons
+    - Total pembayaran
+  - Auto-redirect ke WhatsApp admin
+- ✅ Invoice detail lengkap untuk customer reference
+
 ---
 
-#### 3. Category Management
+#### 3. **Global Add-ons Management** 🆕 (v1.3.0)
+**Independent Add-ons Section** di Admin Panel
+
+**CRUD Operations:**
+- ✅ **Create** global add-on baru
+- ✅ **Read/View** semua add-ons dengan list view
+- ✅ **Update** add-on existing
+- ✅ **Delete** add-on dengan validation
+
+**Add-on Fields:**
+- ✅ Nama add-on (required) - "Greeting Card", "Coklat", dll
+- ✅ Deskripsi (textarea, required)
+- ✅ Harga (numeric, required)
+- ✅ Stok (integer, required)
+- ✅ **URL-based Images** (max 5):
+  - Paste URL dari Cloudinary/CDN
+  - Real-time preview untuk setiap image
+  - **In-page Image Editor:**
+    - Crop dengan aspect ratio bebas
+    - Zoom control (1x-3x)
+    - Rotate control (0°-360°)
+    - Auto-compress: max 800px, 80% quality
+    - Save edited image as base64 data URL
+  - Delete individual images
+- ✅ **Has Custom Message** (boolean)
+  - Enable field untuk customer input pesan (max 500 char)
+  - Example: Greeting card membutuhkan pesan ucapan
+- ✅ **Available/Unavailable** status (boolean)
+- ✅ Sort order (auto-set, future enhancement)
+
+**List View Features:**
+- ✅ Table dengan columns: Name, Price, Stock, Status, Actions
+- ✅ Quick view first image (thumbnail)
+- ✅ **Stock status indicator**:
+  - 🟢 Available (stock > 10)
+  - 🟡 Low Stock (stock ≤ 10)
+  - 🔴 Out of Stock (stock = 0)
+- ✅ Availability badge (Available/Unavailable)
+- ✅ Quick actions: Edit, Delete
+
+**Business Rules:**
+- ✅ Global add-ons dapat digunakan untuk multiple products
+- ✅ Delete add-on akan remove dari semua products (cascade)
+- ✅ Stock reduction saat customer checkout
+- ✅ Admin bisa temporarily disable add-on (is_available = false)
+
+---
+
+#### 4. **Website Settings Management** 🆕 (v1.3.0)
+**Dynamic Configuration System**
+
+**Homepage Banner Settings:**
+- ✅ **URL-based banner image** (recommended: 1920x600px)
+- ✅ **Auto-resize checkbox:**
+  - When checked: Auto resize image to 1920x600px
+  - Canvas-based client-side resize
+  - 90% JPEG quality
+  - Processing indicator: "Resize gambar..." → "Menyimpan..."
+- ✅ **Real-time preview** sebelum save
+- ✅ **4 suggested banner images** dari Unsplash untuk quick selection
+- ✅ Fallback banner jika setting kosong
+
+**Settings Data:**
+- ✅ **Key-value store** di database (table: `settings`)
+- ✅ Current setting: `home_banner_image`
+- ✅ Model helper methods:
+  - `Setting::get('key', 'default')`
+  - `Setting::set('key', 'value')`
+
+**Future Settings (Planned):**
+- ⚠️ Contact information (WhatsApp, email, address)
+- ⚠️ Payment methods configuration
+- ⚠️ Shipping cost calculator
+- ⚠️ Site maintenance mode
+- ⚠️ SEO metadata
+
+**Access:**
+- ✅ Settings button di Admin Orders page (top navigation)
+- ✅ Direct route: `/admin/settings`
+
+---
+
+#### 5. Category Management
 **CRUD Categories:**
 - ✅ **Create** kategori baru
 - ✅ **Read/View** semua kategori
@@ -486,7 +610,7 @@ Katalog produk bunga
 
 ---
 
-### 4. **product_images** (Product Image Gallery) 🖼️ NEW! (v1.2.0)
+### 4. **product_images** (Product Image Gallery) 🖼️ (v1.2.0)
 Multiple images untuk satu produk (gallery)
 
 | Column | Type | Constraints | Description |
@@ -512,8 +636,137 @@ Multiple images untuk satu produk (gallery)
 
 ---
 
-### 5. **product_addons** (Product Add-ons) ➕ NEW! (v1.2.0)
-Add-ons yang bisa dipilih customer untuk produk (kartu ucapan, coklat, dll)
+### 5. **addons** (Global Add-ons) 🆕 (v1.3.0 UPGRADED)
+**Global add-ons** yang dapat digunakan untuk berbagai produk (bukan per-product)
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `name` | VARCHAR(255) | NOT NULL | Nama add-on (Greeting Card, Coklat, dll) |
+| `description` | TEXT | NULLABLE | Deskripsi add-on |
+| `price` | DECIMAL(10,2) | NOT NULL | Harga add-on (Rupiah) |
+| `stock` | INTEGER | DEFAULT 0 | Stok add-on |
+| `is_available` | BOOLEAN | DEFAULT TRUE | Status ketersediaan |
+| `has_custom_message` | BOOLEAN | DEFAULT FALSE | Apakah bisa input pesan custom |
+| `sort_order` | INTEGER | DEFAULT 0 | Urutan tampilan |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu dibuat |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To Many `products` (M:N via `addon_product`)
+- Has Many `addon_images` (1:N)
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`is_available`)
+
+**Upgrade Note:**
+- **Before (v1.2.0)**: Table `product_addons` (product-specific, redundant data)
+- **After (v1.3.0)**: Table `addons` (global, many-to-many dengan products)
+- **Benefit**: Admin create add-on sekali, attach ke multiple products
+
+---
+
+### 6. **addon_product** (Addon-Product Pivot) 🆕 (v1.3.0)
+Pivot table untuk many-to-many relationship antara addons dan products
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `addon_id` | BIGINT UNSIGNED | FK → addons.id, NOT NULL | Addon reference |
+| `product_id` | BIGINT UNSIGNED | FK → products.id, NOT NULL | Product reference |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu attached |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To `addons` (N:1)
+- Belongs To `products` (N:1)
+
+**Foreign Keys:**
+- `addon_id` → `addons(id)` ON DELETE CASCADE
+- `product_id` → `products(id)` ON DELETE CASCADE
+
+**Unique Constraints:**
+- UNIQUE KEY (`addon_id`, `product_id`)
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- UNIQUE KEY (`addon_id`, `product_id`)
+
+---
+
+### 7. **addon_images** (Addon Image Gallery) 🆕 (v1.3.0)
+Images untuk global add-ons (support URL dan base64 data URLs)
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `addon_id` | BIGINT UNSIGNED | FK → addons.id, NULLABLE | Addon reference (global addons) |
+| `product_addon_id` | BIGINT UNSIGNED | NULLABLE | Legacy reference (deprecated) |
+| `image_path` | TEXT | NOT NULL | URL or base64 data URL |
+| `sort_order` | INTEGER | DEFAULT 0 | Urutan tampilan |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu dibuat |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To `addons` (N:1)
+
+**Foreign Keys:**
+- `addon_id` → `addons(id)` ON DELETE CASCADE
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`addon_id`, `sort_order`)
+
+**Technical Note:**
+- `image_path` uses **TEXT** (not VARCHAR) untuk support base64 data URLs from cropped images
+- Migration: `change_image_path_to_text_in_addon_images_table` (Dec 17, 2025)
+- Max 5 images per add-on
+
+---
+
+### 8. **product_addons** (Legacy - DEPRECATED) ⚠️
+**Note:** Tabel ini masih ada di database untuk backward compatibility, tetapi **tidak digunakan** di v1.3.0.
+Diganti dengan sistem global add-ons (`addons` + `addon_product` + `addon_images`).
+
+Untuk cleanup di production:
+```sql
+-- Drop old product-specific addon tables (jika sudah migrate data)
+DROP TABLE IF EXISTS product_addons;
+```
+
+---
+
+### 9. **settings** (Website Settings) 🆕 (v1.3.0)
+Key-value store untuk website configurations
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `key` | VARCHAR(255) | UNIQUE, NOT NULL | Setting key |
+| `value` | TEXT | NULLABLE | Setting value (URL, JSON, text) |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu dibuat |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- UNIQUE KEY (`key`)
+
+**Current Settings:**
+- `home_banner_image` - Homepage banner URL (default: Unsplash image)
+
+**Model Helpers:**
+```php
+// Get setting
+$banner = Setting::get('home_banner_image', 'default-url.jpg');
+
+// Set setting
+Setting::set('home_banner_image', 'new-banner-url.jpg');
+```
+
+---
+
+### 10. **product_reviews** (Product Reviews & Ratings) ⭐ (v1.1.0)
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|

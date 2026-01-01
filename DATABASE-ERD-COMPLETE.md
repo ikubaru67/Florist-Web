@@ -5,9 +5,9 @@
 **Database Name:** `florist`  
 **Engine:** InnoDB  
 **Charset:** utf8mb4_unicode_ci  
-**Total Tables:** 15 tables *(product_reviews & product_images added)*  
+**Total Tables:** 19 tables *(addons, addon_product, addon_images, settings added)*  
 **Laravel Version:** 11.x  
-**Last Updated:** December 10, 2025
+**Last Updated:** December 17, 2025
 
 ---
 
@@ -57,6 +57,7 @@ erDiagram
     products ||--o{ order_items : "included in"
     products ||--o{ product_reviews : "has reviews"
     products ||--o{ product_images : "has images"
+    products }o--o{ addons : "can have (via addon_product)"
     products {
         bigint id PK
         bigint category_id FK "→categories.id"
@@ -69,6 +70,48 @@ erDiagram
         json images "multiple images"
         boolean is_featured
         boolean is_active
+        timestamps created_at
+        timestamps updated_at
+    }
+
+    addons ||--o{ addon_images : "has images"
+    addons }o--o{ products : "attached to (via addon_product)"
+    addons {
+        bigint id PK
+        string name
+        text description
+        decimal price
+        int stock
+        boolean is_available
+        boolean has_custom_message
+        int sort_order
+        timestamps created_at
+        timestamps updated_at
+    }
+
+    addon_product {
+        bigint id PK
+        bigint addon_id FK "→addons.id"
+        bigint product_id FK "→products.id"
+        timestamps created_at
+        timestamps updated_at
+        unique addon_id_product_id
+    }
+
+    addon_images {
+        bigint id PK
+        bigint addon_id FK "→addons.id NULLABLE"
+        bigint product_addon_id FK "NULLABLE legacy"
+        text image_path
+        int sort_order
+        timestamps created_at
+        timestamps updated_at
+    }
+
+    settings {
+        bigint id PK
+        string key UK
+        text value
         timestamps created_at
         timestamps updated_at
     }
@@ -212,18 +255,22 @@ erDiagram
 | 1 | `users` | Core | User accounts (admin & customer) |
 | 2 | `categories` | Core | Product categories |
 | 3 | `products` | Core | Product catalog |
-| 4 | `product_reviews` | Core | Product ratings & reviews |
-| 5 | `product_images` | Core | Product image gallery |
-| 6 | `cart_items` | Core | Shopping cart |
-| 7 | `orders` | Core | Customer orders |
-| 8 | `order_items` | Core | Order line items |
-| 9 | `password_reset_tokens` | Auth | Password reset tokens |
-| 10 | `sessions` | System | User sessions |
-| 11 | `jobs` | Queue | Background jobs |
-| 12 | `job_batches` | Queue | Job batching |
-| 13 | `failed_jobs` | Queue | Failed job logs |
-| 14 | `cache` | System | Application cache |
-| 15 | `cache_locks` | System | Cache locking |
+| 4 | `addons` | Core | **Global add-ons** (greeting cards, chocolates, etc) |
+| 5 | `addon_product` | Core | **Pivot table** for many-to-many products ↔ addons |
+| 6 | `addon_images` | Core | **Images for global add-ons** |
+| 7 | `product_reviews` | Core | Product ratings & reviews |
+| 8 | `product_images` | Core | Product image gallery |
+| 9 | `settings` | Core | **Website settings** (banner, configs) |
+| 10 | `cart_items` | Core | Shopping cart |
+| 11 | `orders` | Core | Customer orders |
+| 12 | `order_items` | Core | Order line items |
+| 13 | `password_reset_tokens` | Auth | Password reset tokens |
+| 14 | `sessions` | System | User sessions |
+| 15 | `jobs` | Queue | Background jobs |
+| 16 | `job_batches` | Queue | Job batching |
+| 17 | `failed_jobs` | Queue | Failed job logs |
+| 18 | `cache` | System | Application cache |
+| 19 | `cache_locks` | System | Cache locking |
 
 ---
 
@@ -331,7 +378,201 @@ Katalog produk bunga
 
 ---
 
-### 4. **product_reviews** (Product Ratings & Reviews)
+### 4. **addons** (Global Add-ons) 🆕
+Global add-ons yang dapat digunakan untuk berbagai produk
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `name` | VARCHAR(255) | NOT NULL | Nama add-on (Greeting Card, Coklat, dll) |
+| `description` | TEXT | NULLABLE | Deskripsi add-on |
+| `price` | DECIMAL(10,2) | NOT NULL | Harga add-on (Rupiah) |
+| `stock` | INT | DEFAULT 0 | Jumlah stok add-on |
+| `is_available` | BOOLEAN | DEFAULT TRUE | Status ketersediaan |
+| `has_custom_message` | BOOLEAN | DEFAULT FALSE | Apakah bisa input pesan custom |
+| `sort_order` | INT | DEFAULT 0 | Urutan tampilan |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu dibuat |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To Many `products` (M:N via addon_product)
+- Has Many `addon_images` (1:N)
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`is_available`) - Fast filtering
+
+**Business Rules:**
+- Global add-ons dapat digunakan untuk multiple products
+- Admin menentukan add-on mana yang tersedia untuk produk tertentu via pivot table
+- Stock dikurangi saat customer checkout
+- `has_custom_message=true` → customer bisa input pesan (max 500 char)
+
+**Sample Data:**
+- Greeting Card - Rp 5.000
+- Coklat Ferrero Rocher - Rp 35.000
+- Boneka Teddy Bear - Rp 50.000
+- Lilin Ulang Tahun - Rp 10.000
+
+**Upgrade Note (Dec 2025):**
+- Sebelumnya: Add-ons product-specific (tabel `product_addons`)
+- Sekarang: Global add-ons dengan many-to-many relationship
+- Keuntungan: Admin tidak perlu create add-on berulang untuk setiap produk
+
+---
+
+### 5. **addon_product** (Addon-Product Pivot) 🆕
+Pivot table untuk many-to-many relationship antara addons dan products
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `addon_id` | BIGINT UNSIGNED | FK → addons.id, NOT NULL | Addon reference |
+| `product_id` | BIGINT UNSIGNED | FK → products.id, NOT NULL | Product reference |
+| `created_at` | TIMESTAMP | NOT NULL | Waktu attached |
+| `updated_at` | TIMESTAMP | NOT NULL | Waktu update |
+
+**Relationships:**
+- Belongs To `addons` (N:1)
+- Belongs To `products` (N:1)
+
+**Foreign Keys:**
+- `addon_id` → `addons(id)` ON DELETE CASCADE
+- `product_id` → `products(id)` ON DELETE CASCADE
+
+**Unique Constraints:**
+- UNIQUE KEY (`addon_id`, `product_id`) - Satu add-on hanya bisa attach 1x ke satu produk
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- UNIQUE KEY (`addon_id`, `product_id`)
+
+**Business Rules:**
+- Admin pilih add-on mana yang tersedia untuk produk tertentu
+- Jika add-on dihapus, semua relationships ikut terhapus (CASCADE)
+- Jika product dihapus, relationships ikut terhapus (CASCADE)
+
+**Sample Query:**
+```sql
+-- Get all add-ons untuk produk tertentu
+SELECT a.* FROM addons a
+INNER JOIN addon_product ap ON a.id = ap.addon_id
+WHERE ap.product_id = 1 AND a.is_available = 1
+ORDER BY a.sort_order ASC;
+
+-- Get all products yang punya add-on tertentu
+SELECT p.* FROM products p
+INNER JOIN addon_product ap ON p.id = ap.product_id
+WHERE ap.addon_id = 1;
+```
+
+---
+
+### 6. **addon_images** (Addon Image Gallery) 🆕
+Images untuk global add-ons (support URL dan base64 data URLs)
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `addon_id` | BIGINT UNSIGNED | FK → addons.id, NULLABLE | Addon reference (global addons) |
+| `product_addon_id` | BIGINT UNSIGNED | NULLABLE | Legacy reference (deprecated) |
+| `image_path` | TEXT | NOT NULL | URL or base64 data URL |
+| `sort_order` | INT | DEFAULT 0 | Display order |
+| `created_at` | TIMESTAMP | NOT NULL | Upload time |
+| `updated_at` | TIMESTAMP | NOT NULL | Update time |
+
+**Relationships:**
+- Belongs To `addons` (N:1)
+
+**Foreign Keys:**
+- `addon_id` → `addons(id)` ON DELETE CASCADE
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- INDEX (`addon_id`, `sort_order`) - Ordered retrieval
+
+**Business Rules:**
+- Support **URL images** (Cloudinary, CDN) dan **base64 data URLs** (cropped images)
+- `image_path` menggunakan **TEXT** bukan VARCHAR karena base64 bisa > 50KB characters
+- Max 5 images per add-on
+- sort_order menentukan urutan di gallery (ASC)
+- Jika addon dihapus, semua images ikut terhapus (CASCADE)
+
+**Image Editor Features:**
+- Admin bisa crop, zoom, rotate images
+- Hasil crop disimpan sebagai base64 data URL
+- Auto-compress: max 800px, 80% quality, max 500KB
+
+**Sample Query:**
+```sql
+-- Get all images untuk addon tertentu
+SELECT * FROM addon_images 
+WHERE addon_id = 1 
+ORDER BY sort_order ASC;
+```
+
+**Migration History:**
+- 2025-12-15: Created with addon_id support
+- 2025-12-17: Changed image_path from VARCHAR(255) to TEXT for base64 support
+
+---
+
+### 7. **settings** (Website Settings) 🆕
+Key-value store untuk website configurations
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Primary Key |
+| `key` | VARCHAR(255) | UNIQUE, NOT NULL | Setting key |
+| `value` | TEXT | NULLABLE | Setting value (JSON, URL, text) |
+| `created_at` | TIMESTAMP | NOT NULL | Created time |
+| `updated_at` | TIMESTAMP | NOT NULL | Update time |
+
+**Indexes:**
+- PRIMARY KEY (`id`)
+- UNIQUE KEY (`key`)
+
+**Business Rules:**
+- Flexible key-value storage untuk berbagai configs
+- Value bisa berupa: URL, JSON, plain text, number
+- Admin update via Settings page
+
+**Current Settings:**
+| Key | Value | Description |
+|-----|-------|-------------|
+| `home_banner_image` | URL | Homepage banner image (1920x600px) |
+
+**Model Helper Methods:**
+```php
+// Get setting dengan default value
+Setting::get('home_banner_image', 'default-url.jpg');
+
+// Set/update setting
+Setting::set('home_banner_image', 'new-url.jpg');
+```
+
+**Future Use Cases:**
+- Site maintenance mode
+- Contact information (WhatsApp, email, address)
+- Payment methods config
+- Shipping cost calculator
+- Tax percentage
+- Free shipping threshold
+- SEO metadata
+
+**Sample Query:**
+```sql
+-- Get homepage banner
+SELECT value FROM settings WHERE key = 'home_banner_image';
+
+-- Update banner
+UPDATE settings SET value = 'new-url.jpg', updated_at = NOW() 
+WHERE key = 'home_banner_image';
+```
+
+---
+
+### 8. **product_reviews** (Product Ratings & Reviews)
 Review dan rating produk dari customer
 
 | Column | Type | Constraints | Description |
@@ -383,7 +624,7 @@ GROUP BY product_id;
 
 ---
 
-### 5. **product_images** (Product Image Gallery)
+### 9. **product_images** (Product Image Gallery)
 Multiple images untuk setiap produk
 
 | Column | Type | Constraints | Description |
@@ -422,7 +663,7 @@ ORDER BY is_primary DESC, sort_order ASC;
 
 ---
 
-### 6. **cart_items** (Shopping Cart)
+### 10. **cart_items** (Shopping Cart)
 Keranjang belanja user
 
 | Column | Type | Constraints | Description |
@@ -453,7 +694,7 @@ Keranjang belanja user
 
 ---
 
-### 7. **orders** (Customer Orders)
+### 11. **orders** (Customer Orders)
 Pesanan customer
 
 | Column | Type | Constraints | Description |
@@ -503,7 +744,7 @@ failed (if payment failed)
 
 ---
 
-### 6. **order_items** (Order Details)
+### 12. **order_items** (Order Details)
 Detail item dalam pesanan
 
 | Column | Type | Constraints | Description |
@@ -532,7 +773,7 @@ Detail item dalam pesanan
 
 ---
 
-### 7. **password_reset_tokens** (Password Reset)
+### 13. **password_reset_tokens** (Password Reset)
 Token untuk reset password (Laravel default)
 
 | Column | Type | Constraints | Description |
@@ -545,7 +786,7 @@ Token untuk reset password (Laravel default)
 
 ---
 
-### 8. **sessions** (User Sessions)
+### 14. **sessions** (User Sessions)
 Session management Laravel (database driver)
 
 | Column | Type | Constraints | Description |
@@ -561,7 +802,7 @@ Session management Laravel (database driver)
 
 ---
 
-### 9. **jobs** (Background Jobs)
+### 15. **jobs** (Background Jobs)
 Queue jobs Laravel
 
 | Column | Type | Constraints | Description |
@@ -583,7 +824,7 @@ Queue jobs Laravel
 
 ---
 
-### 10. **job_batches** (Job Batching)
+### 16. **job_batches** (Job Batching)
 Batch job tracking Laravel
 
 | Column | Type | Constraints | Description |
@@ -603,7 +844,7 @@ Batch job tracking Laravel
 
 ---
 
-### 11. **failed_jobs** (Failed Jobs Log)
+### 17. **failed_jobs** (Failed Jobs Log)
 Log untuk jobs yang gagal
 
 | Column | Type | Constraints | Description |
@@ -620,7 +861,7 @@ Log untuk jobs yang gagal
 
 ---
 
-### 12. **cache** (Application Cache)
+### 18. **cache** (Application Cache)
 Cache storage Laravel (database driver)
 
 | Column | Type | Constraints | Description |
@@ -638,7 +879,7 @@ Cache storage Laravel (database driver)
 
 ---
 
-### 13. **cache_locks** (Cache Locking)
+### 19. **cache_locks** (Cache Locking)
 Distributed locks Laravel
 
 | Column | Type | Constraints | Description |
@@ -663,8 +904,14 @@ products (1) ←→ (N) cart_items
 products (1) ←→ (N) order_items
 products (1) ←→ (N) product_reviews
 products (1) ←→ (N) product_images
+addons (1) ←→ (N) addon_images
 orders (1) ←→ (N) order_items
 orders (1) ←→ (N) product_reviews
+```
+
+### Many-to-Many (M:N)
+```
+products (M) ←→ (N) addons  [via addon_product pivot]
 ```
 
 ---
@@ -674,6 +921,9 @@ orders (1) ←→ (N) product_reviews
 | Child Table | Child Column | Parent Table | Parent Column | On Delete |
 |-------------|--------------|--------------|---------------|-----------|
 | `products` | `category_id` | `categories` | `id` | CASCADE |
+| `addon_product` | `addon_id` | `addons` | `id` | CASCADE |
+| `addon_product` | `product_id` | `products` | `id` | CASCADE |
+| `addon_images` | `addon_id` | `addons` | `id` | CASCADE |
 | `product_reviews` | `product_id` | `products` | `id` | CASCADE |
 | `product_reviews` | `user_id` | `users` | `id` | CASCADE |
 | `product_reviews` | `order_id` | `orders` | `id` | CASCADE |
@@ -694,6 +944,8 @@ orders (1) ←→ (N) product_reviews
 | `users` | `email` | Email harus unik |
 | `categories` | `slug` | Category slug harus unik |
 | `products` | `slug` | Product slug harus unik |
+| `addon_product` | `addon_id, product_id` | **One addon can attach once per product** |
+| `settings` | `key` | **Setting key harus unik** |
 | `product_reviews` | `product_id, user_id, order_id, order_item_id` | User hanya bisa review 1x per item per order |
 | `cart_items` | `user_id, product_id` | User tidak bisa tambah produk yang sama 2x |
 | `orders` | `order_number` | Order number harus unik |
@@ -710,6 +962,10 @@ Based on seeders:
 | users | 2 (1 admin, 1 user) | InnoDB |
 | categories | 5 | InnoDB |
 | products | 20 | InnoDB |
+| addons | 0 (managed by admin) | InnoDB |
+| addon_product | 0 (managed by admin) | InnoDB |
+| addon_images | 0 (managed by admin) | InnoDB |
+| settings | 1 (home_banner_image) | InnoDB |
 | product_reviews | 0 (dynamic) | InnoDB |
 | product_images | 0 (dynamic) | InnoDB |
 | cart_items | 0 (dynamic) | InnoDB |
@@ -719,6 +975,8 @@ Based on seeders:
 **Production Estimates (6 months):**
 - users: 100-1,000
 - products: 50-500
+- addons: 10-50 (global add-ons)
+- addon_images: 30-150 (3 images per addon avg)
 - product_reviews: 200-2,000 (40% conversion dari orders)
 - product_images: 150-1,500 (3 images per product avg)
 - orders: 500-5,000
@@ -864,7 +1122,19 @@ database/migrations/
 ├── 2025_11_11_153621_add_address_to_users_table.php
 ├── 2025_11_11_154218_add_is_admin_to_users_table.php
 ├── 2025_11_12_142241_add_verification_code_to_users_table.php
-└── 2025_12_04_150800_drop_buyers_table.php (cleanup unused table)
+├── 2025_12_04_150800_drop_buyers_table.php (cleanup unused table)
+├── 2025_12_10_082341_create_product_reviews_table.php
+├── 2025_12_10_082359_create_product_images_table.php
+├── 2025_12_10_091117_add_order_item_id_to_product_reviews_table.php
+├── 2025_12_10_101325_update_product_reviews_unique_constraint.php
+├── 2025_12_11_035611_add_has_custom_message_to_product_addons_table.php
+├── 2025_12_11_100001_create_product_addons_table.php (DEPRECATED - old product-specific addons)
+├── 2025_12_11_100002_add_addons_to_cart_and_order_items.php
+├── 2025_12_15_081922_create_addons_table.php ⭐ NEW - Global addons
+├── 2025_12_15_081935_create_addon_product_table.php ⭐ NEW - Pivot table
+├── 2025_12_15_083011_add_addon_id_to_addon_images_table.php ⭐ NEW - Support global addons
+├── 2025_12_17_064000_change_image_path_to_text_in_addon_images_table.php ⭐ NEW - Base64 support
+└── 2025_12_17_142940_create_settings_table.php ⭐ NEW - Website settings
 ```
 
 ---
@@ -1009,9 +1279,14 @@ mmdc -i DATABASE-ERD-COMPLETE.md -o database-erd.svg
 ---
 
 **✅ Verified & Accurate**  
-**📅 Last Updated:** December 4, 2025  
+**📅 Last Updated:** December 17, 2025  
 **👨‍💻 Author:** Florist Shop Development Team  
-**🌸 Project:** Florist E-commerce Platform
+**🌸 Project:** Florist E-commerce Platform  
+**🆕 Latest Changes:**
+- Global Add-ons system (many-to-many with products)
+- Website Settings table for dynamic configurations
+- Addon Images with base64 support for cropped images
+- Homepage banner customization via admin panel
 
 ---
 
