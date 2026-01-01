@@ -40,9 +40,29 @@ class AdminProductController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $addons = \App\Models\Addon::with('images')
+            ->where('is_available', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($addon) {
+                return [
+                    'id' => $addon->id,
+                    'name' => $addon->name,
+                    'description' => $addon->description,
+                    'price' => $addon->price,
+                    'stock' => $addon->stock,
+                    'has_custom_message' => $addon->has_custom_message,
+                    'images' => $addon->images->map(fn($img) => [
+                        'id' => $img->id,
+                        'url' => $img->image_path,
+                    ]),
+                ];
+            });
 
         return Inertia::render('Admin/Products/Create', [
-            'categories' => $categories
+            'categories' => $categories,
+            'availableAddons' => $addons,
         ]);
     }
 
@@ -59,15 +79,8 @@ class AdminProductController extends Controller
             'additional_images.*' => 'nullable|url',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
-            'addons' => 'nullable|array',
-            'addons.*.name' => 'required_with:addons|string|max:255',
-            'addons.*.description' => 'nullable|string',
-            'addons.*.price' => 'required_with:addons|numeric|min:0',
-            'addons.*.stock' => 'required_with:addons|integer|min:0',
-            'addons.*.is_available' => 'boolean',
-            'addons.*.has_custom_message' => 'boolean',
-            'addons.*.images' => 'nullable|array|max:5',
-            'addons.*.images.*' => 'nullable|url',
+            'selected_addons' => 'nullable|array',
+            'selected_addons.*' => 'exists:addons,id',
         ]);
 
         $product = Product::create([
@@ -97,50 +110,47 @@ class AdminProductController extends Controller
             }
         }
 
-        // Save add-ons
-        if ($request->has('addons')) {
-            foreach ($request->addons as $index => $addonData) {
-                $addon = \App\Models\ProductAddon::create([
-                    'product_id' => $product->id,
-                    'name' => $addonData['name'],
-                    'description' => $addonData['description'] ?? null,
-                    'price' => $addonData['price'],
-                    'stock' => $addonData['stock'],
-                    'is_available' => $addonData['is_available'] ?? true,
-                    'has_custom_message' => $addonData['has_custom_message'] ?? false,
-                    'sort_order' => $index,
-                ]);
-
-                // Save addon images
-                if (isset($addonData['images']) && is_array($addonData['images'])) {
-                    $imageSortOrder = 0;
-                    foreach ($addonData['images'] as $imageUrl) {
-                        if (!empty($imageUrl)) {
-                            \App\Models\AddonImage::create([
-                                'product_addon_id' => $addon->id,
-                                'image_path' => $imageUrl,
-                                'sort_order' => $imageSortOrder++,
-                            ]);
-                        }
-                    }
-                }
-            }
+        // Attach selected global add-ons to product
+        if ($request->has('selected_addons') && is_array($request->selected_addons)) {
+            $product->addons()->attach($request->selected_addons);
         }
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produk berhasil ditambahkan');
+            ->with('success', 'Produk berhasil ditambahkan!');
     }
 
     public function edit(Product $product)
     {
         $categories = Category::all();
-
+        
         // Load product images and addons with their images
         $product->load(['productImages', 'addons.images']);
 
+        // Get all available addons
+        $addons = \App\Models\Addon::with('images')
+            ->where('is_available', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($addon) {
+                return [
+                    'id' => $addon->id,
+                    'name' => $addon->name,
+                    'description' => $addon->description,
+                    'price' => $addon->price,
+                    'stock' => $addon->stock,
+                    'has_custom_message' => $addon->has_custom_message,
+                    'images' => $addon->images->map(fn($img) => [
+                        'id' => $img->id,
+                        'url' => $img->image_path,
+                    ]),
+                ];
+            });
+
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
-            'categories' => $categories
+            'categories' => $categories,
+            'availableAddons' => $addons,
         ]);
     }
 
@@ -157,15 +167,8 @@ class AdminProductController extends Controller
             'additional_images.*' => 'nullable|url',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
-            'addons' => 'nullable|array',
-            'addons.*.name' => 'required_with:addons|string|max:255',
-            'addons.*.description' => 'nullable|string',
-            'addons.*.price' => 'required_with:addons|numeric|min:0',
-            'addons.*.stock' => 'required_with:addons|integer|min:0',
-            'addons.*.is_available' => 'boolean',
-            'addons.*.has_custom_message' => 'boolean',
-            'addons.*.images' => 'nullable|array|max:5',
-            'addons.*.images.*' => 'nullable|url',
+            'selected_addons' => 'nullable|array',
+            'selected_addons.*' => 'exists:addons,id',
         ]);
 
         $product->update([
@@ -199,42 +202,15 @@ class AdminProductController extends Controller
             }
         }
 
-        // Update add-ons (delete old, create new)
-        if ($request->has('addons')) {
-            // Delete existing addons (will cascade delete images)
-            $product->addons()->delete();
-            
-            // Create new addons
-            foreach ($request->addons as $index => $addonData) {
-                $addon = \App\Models\ProductAddon::create([
-                    'product_id' => $product->id,
-                    'name' => $addonData['name'],
-                    'description' => $addonData['description'] ?? null,
-                    'price' => $addonData['price'],
-                    'stock' => $addonData['stock'],
-                    'is_available' => $addonData['is_available'] ?? true,
-                    'has_custom_message' => $addonData['has_custom_message'] ?? false,
-                    'sort_order' => $index,
-                ]);
-
-                // Save addon images
-                if (isset($addonData['images']) && is_array($addonData['images'])) {
-                    $imageSortOrder = 0;
-                    foreach ($addonData['images'] as $imageUrl) {
-                        if (!empty($imageUrl)) {
-                            \App\Models\AddonImage::create([
-                                'product_addon_id' => $addon->id,
-                                'image_path' => $imageUrl,
-                                'sort_order' => $imageSortOrder++,
-                            ]);
-                        }
-                    }
-                }
-            }
+        // Sync selected addons (many-to-many relationship)
+        if ($request->has('selected_addons')) {
+            $product->addons()->sync($request->selected_addons);
+        } else {
+            $product->addons()->detach();
         }
 
         return redirect()->route('admin.products.index')
-            ->with('success', 'Produk berhasil diupdate');
+            ->with('success', 'Produk berhasil diperbarui!');
     }
 
     public function destroy(Product $product)

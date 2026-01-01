@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AddonImage extends Model
 {
     protected $fillable = [
-        'product_addon_id',
+        'addon_id',
         'image_path',
         'sort_order',
     ];
@@ -18,6 +18,6 @@ class AddonImage extends Model
      */
     public function addon(): BelongsTo
     {
-        return $this->belongsTo(ProductAddon::class, 'product_addon_id');
+        return $this->belongsTo(Addon::class, 'addon_id');
     }
 }

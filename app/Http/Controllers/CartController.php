@@ -105,7 +105,7 @@ class CartController extends Controller
                     },
                 ],
                 'addon_items' => 'nullable|array',
-                'addon_items.*.addon_id' => 'required|exists:product_addons,id',
+                'addon_items.*.addon_id' => 'required|exists:addons,id',
                 'addon_items.*.quantity' => 'required|integer|min:1',
                 'addon_items.*.custom_message' => 'nullable|string|max:500'
             ]);
@@ -126,13 +126,17 @@ class CartController extends Controller
         
         if (!empty($addonItems)) {
             foreach ($addonItems as $item) {
-                $addon = \App\Models\ProductAddon::where('id', $item['addon_id'])
-                    ->where('product_id', $product->id)
+                $addon = \App\Models\Addon::where('id', $item['addon_id'])
                     ->where('is_available', true)
                     ->first();
 
                 if (!$addon) {
                     return back()->with('error', "Add-on tidak ditemukan");
+                }
+                
+                // Verify addon is actually available for this product
+                if (!$product->addons->contains('id', $addon->id)) {
+                    return back()->with('error', "Add-on '{$addon->name}' tidak tersedia untuk produk ini");
                 }
 
                 if ($addon->stock < $item['quantity']) {
@@ -196,7 +200,7 @@ class CartController extends Controller
             // Also need to validate addon stock for new quantities
             $existingAddonData = $existingCartItem->addon_ids ?? [];
             foreach ($existingAddonData as $addonItem) {
-                $addon = \App\Models\ProductAddon::find($addonItem['addon_id']);
+                $addon = \App\Models\Addon::find($addonItem['addon_id']);
                 $newAddonQty = $addonItem['quantity'] + ($addonData[array_search($addonItem['addon_id'], array_column($addonData, 'addon_id'))]['quantity'] ?? 0);
                 if ($addon && $addon->stock < $newAddonQty) {
                     return back()->with('error', "Stok add-on '{$addon->name}' tidak mencukupi");
@@ -484,7 +488,7 @@ class CartController extends Controller
                 $addonData = [];
                 if (!empty($item->addon_ids)) {
                     foreach ($item->addon_ids as $addonItem) {
-                        $addon = \App\Models\ProductAddon::find($addonItem['addon_id']);
+                        $addon = \App\Models\Addon::find($addonItem['addon_id']);
                         if ($addon) {
                             $addonData[] = [
                                 'addon_id' => $addon->id,

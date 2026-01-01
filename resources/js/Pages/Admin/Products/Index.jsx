@@ -58,6 +58,12 @@ export default function Index({ auth, products, filters }) {
                                 Kelola Pesanan
                             </Link>
                             <Link
+                                href={route('admin.addons.index')}
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                                Kelola Add-ons
+                            </Link>
+                            <Link
                                 href={route('admin.products.create')}
                                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
                             >

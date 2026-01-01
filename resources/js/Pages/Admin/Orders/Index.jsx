@@ -56,13 +56,25 @@ export default function Index({ auth, orders, filters }) {
 
                     {/* Action Buttons & Search Bar */}
                     <div className="mb-6">
-                        {/* Button */}
-                        <div className="mb-4">
+                        {/* Buttons */}
+                        <div className="mb-4 flex flex-wrap gap-3">
                             <Link
                                 href="/admin/products"
                                 className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
                             >
                                 Kelola Produk
+                            </Link>
+                            <Link
+                                href="/admin/addons"
+                                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                                Kelola Add-ons
+                            </Link>
+                            <Link
+                                href="/admin/settings"
+                                className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                            >
+                                ⚙️ Pengaturan
                             </Link>
                         </div>
 

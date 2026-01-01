@@ -92,6 +92,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Manage Products
     Route::resource('products', AdminProductController::class);
+    
+    // Manage Add-ons (Global)
+    Route::resource('addons', \App\Http\Controllers\Admin\AddonController::class);
+    
+    // Settings
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 });
 
 require __DIR__.'/auth.php';

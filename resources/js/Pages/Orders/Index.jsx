@@ -40,7 +40,7 @@ export default function OrdersIndex({ auth, orders, activeTab = 'all' }) {
 
     const getStatusText = (status) => {
         const text = {
-            pending: 'Menunggu',
+            pending: 'Menunggu Pembayaran',
             processing: 'Diproses',
             completed: 'Selesai',
             cancelled: 'Dibatalkan'

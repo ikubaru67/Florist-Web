@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Setting;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -29,11 +30,14 @@ class HomeController extends Controller
             ->latest()
             ->limit(8)
             ->get();
+        
+        $bannerImage = Setting::get('home_banner_image', 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1920&h=600&fit=crop');
 
         return Inertia::render('Home', [
             'featuredProducts' => $featuredProducts,
             'categories' => $categories,
-            'latestProducts' => $latestProducts
+            'latestProducts' => $latestProducts,
+            'bannerImage' => $bannerImage
         ]);
     }
 }

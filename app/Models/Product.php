@@ -63,7 +63,14 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    // Many-to-many relationship with Addon
     public function addons()
+    {
+        return $this->belongsToMany(Addon::class, 'addon_product');
+    }
+
+    // Old relationship - keeping for backward compatibility during migration
+    public function productAddons()
     {
         return $this->hasMany(ProductAddon::class)->orderBy('sort_order');
     }

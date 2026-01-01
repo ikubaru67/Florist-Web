@@ -1,7 +1,8 @@
 import ShopLayout from '@/Layouts/ShopLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
-export default function Create({ auth, categories }) {
+export default function Create({ auth, categories, availableAddons }) {
     const { data, setData, post, processing, errors } = useForm({
         category_id: '',
         name: '',
@@ -10,57 +11,56 @@ export default function Create({ auth, categories }) {
         stock: '',
         image: '',
         additional_images: [''], // Array untuk gambar tambahan
-        addons: [], // Array untuk add-ons
+        selected_addons: [], // Array ID addon yang dipilih
         is_featured: false,
         is_active: true,
     });
+
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route('admin.products.store'));
     };
 
-    // Add-on functions
-    const addAddon = () => {
-        setData('addons', [...data.addons, {
-            name: '',
-            description: '',
-            price: '',
-            stock: '',
-            is_available: true,
-            has_custom_message: false,
-            images: ['']
-        }]);
+    // Add addon from dropdown
+    const addAddon = (addonId) => {
+        if (!data.selected_addons.includes(addonId)) {
+            setData('selected_addons', [...data.selected_addons, addonId]);
+        }
+        setShowDropdown(false);
     };
 
-    const removeAddon = (index) => {
-        setData('addons', data.addons.filter((_, i) => i !== index));
+    // Remove addon
+    const removeAddon = (addonId) => {
+        setData('selected_addons', data.selected_addons.filter(id => id !== addonId));
     };
 
-    const updateAddon = (index, field, value) => {
-        const newAddons = [...data.addons];
-        newAddons[index][field] = value;
-        setData('addons', newAddons);
-    };
+    // Get selected addon objects
+    const selectedAddonObjects = availableAddons?.filter(addon => 
+        data.selected_addons.includes(addon.id)
+    ) || [];
 
-    const addAddonImage = (addonIndex) => {
-        const newAddons = [...data.addons];
-        if (newAddons[addonIndex].images.length < 5) {
-            newAddons[addonIndex].images.push('');
-            setData('addons', newAddons);
+    // Get available (not selected) addons for dropdown
+    const availableForSelection = availableAddons?.filter(addon => 
+        !data.selected_addons.includes(addon.id)
+    ) || [];
+
+    // Additional image functions
+    const addAdditionalImage = () => {
+        if (data.additional_images.length < 5) {
+            setData('additional_images', [...data.additional_images, '']);
         }
     };
 
-    const removeAddonImage = (addonIndex, imageIndex) => {
-        const newAddons = [...data.addons];
-        newAddons[addonIndex].images = newAddons[addonIndex].images.filter((_, i) => i !== imageIndex);
-        setData('addons', newAddons);
+    const removeAdditionalImage = (index) => {
+        setData('additional_images', data.additional_images.filter((_, i) => i !== index));
     };
 
-    const updateAddonImage = (addonIndex, imageIndex, value) => {
-        const newAddons = [...data.addons];
-        newAddons[addonIndex].images[imageIndex] = value;
-        setData('addons', newAddons);
+    const updateAdditionalImage = (index, value) => {
+        const newImages = [...data.additional_images];
+        newImages[index] = value;
+        setData('additional_images', newImages);
     };
 
     return (
@@ -272,198 +272,155 @@ export default function Create({ auth, categories }) {
                                     )}
                                 </div>
 
-                                {/* Add-ons Section */}
+                                {/* Add-ons Section - Dropdown Style */}
                                 <div className="mb-6 border-t pt-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <h4 className="text-lg font-semibold text-gray-800">Add-ons Produk</h4>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                Tambahkan pilihan add-ons seperti kartu ucapan, coklat, boneka, dll.
-                                            </p>
+                                    <div className="mb-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div>
+                                                <h4 className="text-lg font-semibold text-gray-800">Add-ons untuk Produk Ini</h4>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Klik tombol di bawah untuk menambah add-on. Kelola add-ons di{' '}
+                                                    <Link 
+                                                        href={route('admin.addons.index')} 
+                                                        className="text-pink-600 hover:underline"
+                                                        target="_blank"
+                                                    >
+                                                        halaman Kelola Add-ons
+                                                    </Link>
+                                                </p>
+                                            </div>
+                                            
+                                            {/* Dropdown Button */}
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowDropdown(!showDropdown)}
+                                                    className="px-5 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2 whitespace-nowrap text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    disabled={availableForSelection.length === 0}
+                                                >
+                                                    ➕ Tambah Add-on
+                                                    <span className={`transform transition text-xs ${showDropdown ? 'rotate-180' : ''}`}>▼</span>
+                                                </button>
+                                                
+                                                {/* Dropdown Menu */}
+                                                {showDropdown && availableForSelection.length > 0 && (
+                                                    <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-96 overflow-y-auto">
+                                                        {availableForSelection.map((addon) => (
+                                                            <button
+                                                                    key={addon.id}
+                                                                    type="button"
+                                                                    onClick={() => addAddon(addon.id)}
+                                                                    className="w-full px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left flex items-center gap-3"
+                                                                >
+                                                                    {addon.images && addon.images.length > 0 && (
+                                                                        <img
+                                                                            src={addon.images[0].url}
+                                                                            alt={addon.name}
+                                                                            className="h-12 w-12 object-cover rounded"
+                                                                        />
+                                                                    )}
+                                                                    <div className="flex-1">
+                                                                        <div className="font-semibold text-gray-900">{addon.name}</div>
+                                                                        <div className="text-sm text-pink-600">
+                                                                            Rp {new Intl.NumberFormat('id-ID').format(addon.price)}
+                                                                        </div>
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={addAddon}
-                                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm"
-                                        >
-                                            ➕ Tambah Add-on
-                                        </button>
                                     </div>
 
-                                    {data.addons.length === 0 && (
+                                    {/* Selected Addons List */}
+                                    {selectedAddonObjects.length === 0 ? (
                                         <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                                            <p className="text-gray-400">Belum ada add-on. Klik tombol di atas untuk menambah.</p>
+                                            {availableAddons && availableAddons.length === 0 ? (
+                                                <>
+                                                    <p className="text-gray-400 mb-3">Belum ada add-on global.</p>
+                                                    <Link
+                                                        href={route('admin.addons.create')}
+                                                        className="inline-block px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+                                                    >
+                                                        Buat Add-on Pertama
+                                                    </Link>
+                                                </>
+                                            ) : (
+                                                <p className="text-gray-400">Belum ada add-on dipilih. Klik "Tambah Add-on" untuk memilih.</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {selectedAddonObjects.map((addon) => (
+                                                <div 
+                                                    key={addon.id} 
+                                                    className="p-4 border-2 border-green-500 bg-green-50 rounded-lg"
+                                                >
+                                                    <div className="flex items-start gap-4">
+                                                        {/* Images */}
+                                                        {addon.images && addon.images.length > 0 && (
+                                                            <div className="flex gap-1">
+                                                                {addon.images.slice(0, 2).map((img, idx) => (
+                                                                    <img
+                                                                        key={idx}
+                                                                        src={img.url}
+                                                                        alt={addon.name}
+                                                                        className="h-16 w-16 object-cover rounded"
+                                                                    />
+                                                                ))}
+                                                                {addon.images.length > 2 && (
+                                                                    <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-600">
+                                                                        +{addon.images.length - 2}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Info */}
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <h5 className="font-semibold text-gray-900">{addon.name}</h5>
+                                                                <span className="text-pink-600 font-semibold">
+                                                                    Rp {new Intl.NumberFormat('id-ID').format(addon.price)}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            {addon.description && (
+                                                                <p className="text-sm text-gray-600 mb-2">{addon.description}</p>
+                                                            )}
+                                                            
+                                                            <div className="flex gap-3 text-xs">
+                                                                <span className="px-2 py-1 bg-white rounded">
+                                                                    Stok: {addon.stock}
+                                                                </span>
+                                                                {addon.has_custom_message && (
+                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                                                                        📝 Pesan Custom
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Remove Button */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeAddon(addon.id)}
+                                                            className="px-3 py-2 text-red-600 hover:bg-red-100 rounded transition"
+                                                        >
+                                                            🗑️ Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
 
-                                    {data.addons.map((addon, addonIndex) => (
-                                        <div key={addonIndex} className="mb-4 p-5 border-2 border-gray-300 rounded-lg bg-gray-50">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <h5 className="font-semibold text-gray-700">Add-on #{addonIndex + 1}</h5>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeAddon(addonIndex)}
-                                                    className="px-3 py-1 text-red-600 hover:bg-red-100 rounded transition text-sm"
-                                                >
-                                                    🗑️ Hapus
-                                                </button>
-                                            </div>
-
-                                            {/* Addon Name */}
-                                            <div className="mb-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Nama Add-on <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={addon.name}
-                                                    onChange={(e) => updateAddon(addonIndex, 'name', e.target.value)}
-                                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                    placeholder="Contoh: Kartu Ucapan Premium"
-                                                />
-                                                {errors[`addons.${addonIndex}.name`] && (
-                                                    <p className="text-red-500 text-sm mt-1">{errors[`addons.${addonIndex}.name`]}</p>
-                                                )}
-                                            </div>
-
-                                            {/* Addon Description */}
-                                            <div className="mb-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Deskripsi
-                                                </label>
-                                                <textarea
-                                                    value={addon.description}
-                                                    onChange={(e) => updateAddon(addonIndex, 'description', e.target.value)}
-                                                    rows="2"
-                                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                    placeholder="Deskripsi add-on..."
-                                                />
-                                            </div>
-
-                                            {/* Price and Stock */}
-                                            <div className="grid grid-cols-2 gap-3 mb-3">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                        Harga <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <div className="flex items-center">
-                                                        <span className="px-2 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600 text-sm">
-                                                            Rp
-                                                        </span>
-                                                        <input
-                                                            type="number"
-                                                            value={addon.price}
-                                                            onChange={(e) => updateAddon(addonIndex, 'price', e.target.value)}
-                                                            className="flex-1 border-gray-300 rounded-r-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                            placeholder="0"
-                                                            min="0"
-                                                        />
-                                                    </div>
-                                                    {errors[`addons.${addonIndex}.price`] && (
-                                                        <p className="text-red-500 text-sm mt-1">{errors[`addons.${addonIndex}.price`]}</p>
-                                                    )}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                        Stok <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        value={addon.stock}
-                                                        onChange={(e) => updateAddon(addonIndex, 'stock', e.target.value)}
-                                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                        placeholder="0"
-                                                        min="0"
-                                                    />
-                                                    {errors[`addons.${addonIndex}.stock`] && (
-                                                        <p className="text-red-500 text-sm mt-1">{errors[`addons.${addonIndex}.stock`]}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Addon Available Checkbox */}
-                                            <div className="mb-3">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={addon.is_available}
-                                                        onChange={(e) => updateAddon(addonIndex, 'is_available', e.target.checked)}
-                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                    />
-                                                    <span className="ml-2 text-sm text-gray-700">Add-on Tersedia</span>
-                                                </label>
-                                            </div>
-
-                                            {/* Has Custom Message Checkbox */}
-                                            <div className="mb-3">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={addon.has_custom_message || false}
-                                                        onChange={(e) => updateAddon(addonIndex, 'has_custom_message', e.target.checked)}
-                                                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                                    />
-                                                    <span className="ml-2 text-sm text-gray-700">Aktifkan Kolom Pesan Custom</span>
-                                                </label>
-                                                <p className="ml-6 text-xs text-gray-500 mt-1">
-                                                    Centang jika add-on ini memerlukan pesan dari customer (contoh: kartu ucapan)
-                                                </p>
-                                            </div>
-
-                                            {/* Addon Images */}
-                                            <div className="border-t pt-3 mt-3">
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Gambar Add-on (Maks. 5)
-                                                </label>
-                                                
-                                                {addon.images.map((imgUrl, imgIndex) => (
-                                                    <div key={imgIndex} className="mb-2 p-3 border border-gray-200 rounded bg-white">
-                                                        <div className="flex items-start gap-2">
-                                                            <div className="flex-1">
-                                                                <input
-                                                                    type="url"
-                                                                    value={imgUrl}
-                                                                    onChange={(e) => updateAddonImage(addonIndex, imgIndex, e.target.value)}
-                                                                    className="w-full border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                                                    placeholder="https://res.cloudinary.com/..."
-                                                                />
-                                                            </div>
-                                                            
-                                                            {imgUrl && (
-                                                                <img
-                                                                    src={imgUrl}
-                                                                    alt={`Preview ${imgIndex + 1}`}
-                                                                    className="h-12 w-12 object-cover rounded border"
-                                                                    onError={(e) => e.target.style.display = 'none'}
-                                                                />
-                                                            )}
-                                                            
-                                                            {addon.images.length > 1 && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => removeAddonImage(addonIndex, imgIndex)}
-                                                                    className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
-                                                                >
-                                                                    🗑️
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                                
-                                                {addon.images.length < 5 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addAddonImage(addonIndex)}
-                                                        className="w-full px-3 py-2 border border-dashed border-gray-300 rounded text-sm text-gray-600 hover:border-blue-400 hover:text-blue-600 transition"
-                                                    >
-                                                        ➕ Tambah Gambar Add-on
-                                                    </button>
-                                                )}
-                                            </div>
+                                    {selectedAddonObjects.length > 0 && (
+                                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                                            ✓ {selectedAddonObjects.length} add-on dipilih untuk produk ini
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
 
                                 {/* Checkboxes */}

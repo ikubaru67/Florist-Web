@@ -22,8 +22,10 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
 3. **Katalog & Shopping**
    - Melihat katalog produk bunga
    - Filter by kategori
-   - Detail produk
-   - Tambah produk ke keranjang
+   - Detail produk dengan multiple images
+   - **Product Add-ons** dengan dropdown selection (v1.3.0 🆕)
+   - Custom message untuk add-ons tertentu
+   - Tambah produk + add-ons ke keranjang
    - Direct Order (beli langsung tanpa keranjang)
 
 4. **Keranjang Belanja**
@@ -42,9 +44,14 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
 
 6. **Riwayat Pesanan**
    - Melihat semua pesanan
-   - Detail pesanan
-   - Status pesanan real-time
-   - Invoice dengan tombol WhatsApp
+   - Detail pesanan dengan add-ons
+   - **Status "Menunggu Pembayaran"** untuk pending orders (v1.3.0 🆕)
+   - **WhatsApp Button** dengan detailed message template (v1.3.0 🆕):
+     - Order number dan tanggal
+     - Customer info lengkap
+     - List produk + add-ons dengan custom messages
+     - Total pembayaran
+   - Invoice lengkap untuk customer reference
 
 ---
 
@@ -214,9 +221,16 @@ Cart dikosongkan
   ↓
 Redirect ke Invoice
   ↓
-User klik "Hubungi via WhatsApp"
+**STATUS: "Menunggu Pembayaran"** (v1.3.0)
   ↓
-WhatsApp terbuka dengan detail semua produk
+User klik tombol **"Hubungi via WhatsApp"** 🆕
+  ↓
+WhatsApp terbuka dengan template message:
+  - Order Number & Tanggal
+  - Customer Info (nama, email, phone, alamat lengkap)
+  - Detail semua produk dengan quantities
+  - Add-ons per produk (jika ada) dengan custom messages
+  - Total Pembayaran
   ↓
 User chat dengan admin untuk konfirmasi & pembayaran
 ```
@@ -263,13 +277,24 @@ Password berhasil diubah ✅
 
 3. **Kelola Produk**
    - Tambah produk baru
+   - **Tambah Global Add-ons** untuk multiple products (v1.3.0 🆕)
+   - **Dropdown selection Add-ons** saat create/edit product (v1.3.0 🆕)
+   - **Image Editor** untuk add-on images (crop, zoom, rotate) (v1.3.0 🆕)
    - Edit produk
    - Hapus produk
    - Set produk sebagai Featured
    - Aktifkan/Nonaktifkan produk
    - Search produk by nama, deskripsi, atau kategori
 
-4. **Metode Pembayaran**
+4. **Website Settings** 🆕 (v1.3.0)
+   - **Homepage Banner Management**:
+     - Upload banner image via URL (Cloudinary/CDN)
+     - Auto-resize to 1920x600px (checkbox option)
+     - Real-time preview
+     - 4 suggested banner images dari Unsplash
+   - Access via button "Settings" di Admin Orders page
+
+5. **Metode Pembayaran**
    - DANA
    - GOPAY
    - OVO
