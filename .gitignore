@@ -24,12 +24,8 @@ Homestead.yaml
 Thumbs.db
 
 # Documentation files (kept locally only, not pushed to GitHub)
+# Only README.md is public
 DATABASE-ERD-COMPLETE.md
 DEV-README.md
 MVP & ERD.md
-README-MVP.md
-CHANGELOG-REVIEW-SYSTEM.md
-QA-CHECKLIST.md
-QA-FIXES-APPLIED.md
-ECOMMERCE_SETUP.md
 DEPLOYMENT-SECURITY.md
