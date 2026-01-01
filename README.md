@@ -751,8 +751,3 @@ flowchart TD
 ```
 
 ---
-
-## �📞 Contact & Support
-
-- **Email:** support@floristshop.com
-- **WhatsApp:** +62 812-3456-7890
