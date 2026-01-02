@@ -78,6 +78,30 @@ Email terverifikasi ✅
 User login otomatis → redirect ke Home
 ```
 
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[User Buka Halaman Register] --> B[Isi Form: Nama, Email, Password, Phone, Alamat]
+    B --> C{Form Valid?}
+    C -->|No| B
+    C -->|Yes| D[Submit Form]
+    D --> E[Sistem Generate OTP 6 Digit]
+    E --> F[Kirim OTP ke Email via Gmail SMTP]
+    F --> G[Redirect ke Halaman Verifikasi Email]
+    G --> H[User Input Kode OTP]
+    H --> I{OTP Valid & Belum Expired?}
+    I -->|No| J[Error: Kode Salah/Expired]
+    J --> K{Resend OTP?}
+    K -->|Yes| E
+    K -->|No| G
+    I -->|Yes| L[Email Verified ✅]
+    L --> M[Auto Login]
+    M --> N[Redirect ke Home Page]
+```
+
+---
+
 ### **2. Login Flow**
 ```
 User buka halaman Login
@@ -116,6 +140,35 @@ Password berhasil direset ✅
 Redirect ke Login
 ```
 
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[User Klik 'Lupa Password?'] --> B[Input Email Terdaftar]
+    B --> C{Email Valid & Terdaftar?}
+    C -->|No| D[Error: Email Tidak Ditemukan]
+    D --> B
+    C -->|Yes| E[Generate OTP 6 Digit]
+    E --> F[Kirim OTP ke Email]
+    F --> G[OTP Expires dalam 10 Menit]
+    G --> H[Redirect ke Verify Code Page]
+    H --> I[User Input OTP]
+    I --> J{OTP Valid & Belum Expired?}
+    J -->|No| K[Error: Kode Salah/Expired]
+    K --> L{Resend Code?}
+    L -->|Yes| E
+    L -->|No| H
+    J -->|Yes| M[Redirect ke Reset Password Form]
+    M --> N[User Input Password Baru 2x]
+    N --> O{Password Match & Valid?}
+    O -->|No| N
+    O -->|Yes| P[Update Password]
+    P --> Q[Password Berhasil Direset ✅]
+    Q --> R[Redirect ke Login Page]
+```
+
+---
+
 ### **4. Order Flow (Direct Order - No Cart)**
 ```
 User browse katalog di halaman Shop
@@ -149,6 +202,32 @@ Sistem generate:
 Redirect ke Invoice
   ↓
 User klik "Hubungi via WhatsApp"
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[User Browse Katalog] --> B[Klik Product]
+    B --> C[Lihat Detail Produk]
+    C --> D{Pilih Add-ons?}
+    D -->|No| E[Set Quantity]
+    D -->|Yes| F[Dropdown Select Add-on]
+    F --> G[Set Quantity Add-on]
+    G --> H{Custom Message Required?}
+    H -->|Yes| I[Input Custom Message max 500 char]
+    H -->|No| J{Add More Add-ons?}
+    I --> J
+    J -->|Yes| F
+    J -->|No| E
+    E --> K{Action?}
+    K -->|Add to Cart| L[Tambah ke Cart]
+    K -->|Buy Now| M[Add to Cart + Redirect ke Checkout]
+    L --> N[Cart Badge Counter Update]
+    N --> O[Tampil Success Notification]
+    O --> P[User Bisa Lanjut Belanja atau Checkout]
+```
+
+---
+
   ↓
 WhatsApp terbuka dengan pesan pre-filled:
   - Order Number
@@ -180,6 +259,39 @@ User bisa:
 
 ### **6. Cart Checkout Flow**
 ```
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[User di Cart atau Buy Now] --> B[Klik Checkout/Lanjut ke Checkout]
+    B --> C[Form Checkout Auto-filled dari Profile]
+    C --> D[Review Order Summary]
+    D --> E[Product + Add-ons dengan Quantities]
+    E --> F[Total Amount Calculation]
+    F --> G[Klik 'Buat Pesanan']
+    G --> H[Validasi Stock Produk & Add-ons]
+    H --> I{Stock Available?}
+    I -->|No| J[Error: Stock Tidak Cukup]
+    J --> D
+    I -->|Yes| K[Create Order]
+    K --> L[Generate Order Number: ORD-YYYYMMDD-XXX]
+    L --> M[Stock Reduction Produk & Add-ons]
+    M --> N[Cart Dikosongkan]
+    N --> O[Order Status: Pending]
+    O --> P[Payment Status: Menunggu Pembayaran]
+    P --> Q[Redirect ke Invoice Page]
+    Q --> R[Tampil Invoice Lengkap]
+    R --> S[Tampil WhatsApp Button]
+    S --> T{User Klik WhatsApp Button?}
+    T -->|Yes| U[Generate Template Message]
+    U --> V[Message Include: Order No, Date, Customer Info, Products, Add-ons, Custom Messages, Total]
+    V --> W[Redirect ke WhatsApp Admin]
+    W --> X[User Chat dengan Admin untuk Konfirmasi & Pembayaran]
+    T -->|No| Y[User Bisa Copy Order Number]
+```
+
+---
+
 User klik icon keranjang di navbar
   ↓
 Halaman Keranjang terbuka:
@@ -237,6 +349,25 @@ User chat dengan admin untuk konfirmasi & pembayaran
 
 ### **7. Ganti Password di Profil**
 ```
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin Buka Login Page] --> B[Input Email & Password]
+    B --> C{Credentials Valid?}
+    C -->|No| D[Error: Email/Password Salah]
+    D --> B
+    C -->|Yes| E{is_admin = 1?}
+    E -->|No| F[Redirect ke User Dashboard]
+    E -->|Yes| G[Login Success ✅]
+    G --> H[Navbar Tampil Link 'Admin Panel']
+    H --> I[Admin Klik 'Admin Panel']
+    I --> J[Redirect ke Admin Dashboard]
+    J --> K[Tampil List Pesanan]
+```
+
+---
+
 User login → buka Profil
   ↓
 Scroll ke section "Update Password"
@@ -279,6 +410,44 @@ Password berhasil diubah ✅
    - Tambah produk baru
    - **Tambah Global Add-ons** untuk multiple products (v1.3.0 🆕)
    - **Dropdown selection Add-ons** saat create/edit product (v1.3.0 🆕)
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di Dashboard] --> B[Lihat List Pesanan]
+    B --> C[Klik Order dengan Status: Pending]
+    C --> D[View Order Detail]
+    D --> E[Tampil Info: Order, Customer, Items, Add-ons, Total]
+    E --> F[Admin Klik 'Terima Pesanan']
+    F --> G[Modal 'Pilih Metode Pembayaran' Muncul]
+    G --> H[Admin Pilih Payment Method]
+    H --> I[Pilihan: DANA, GOPAY, OVO, ShopeePay, SeaBank, BANK, QRIS]
+    I --> J[Admin Klik 'Terima']
+    J --> K[Update Status: Pending → Processing]
+    K --> L[Update Payment Status: Unpaid → Paid]
+    L --> M[Set Payment Method]
+    M --> N[Order Accepted ✅]
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di Order Detail Page] --> B[View Status: Pending]
+    B --> C[Admin Klik 'Tolak Pesanan']
+    C --> D[Konfirmasi Modal Muncul]
+    D --> E{Admin Yakin?}
+    E -->|No| B
+    E -->|Yes| F[Update Status: Pending → Cancelled]
+    F --> G[Restore Stock Produk]
+    G --> H[Restore Stock Add-ons]
+    H --> I[Order Rejected ✅]
+```
+
+---
+
+```
+
+---
+
    - **Image Editor** untuk add-on images (crop, zoom, rotate) (v1.3.0 🆕)
    - Edit produk
    - Hapus produk
@@ -296,6 +465,19 @@ Password berhasil diubah ✅
 
 5. **Metode Pembayaran**
    - DANA
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di Order Detail Page] --> B[View Status: Processing]
+    B --> C[Admin Klik 'Selesaikan Pesanan']
+    C --> D[Update Status: Processing → Completed]
+    D --> E[Order Completed ✅]
+    E --> F[Customer Bisa Review Produk ⭐]
+```
+
+---
+
    - GOPAY
    - OVO
    - ShopeePay
@@ -308,6 +490,53 @@ Password berhasil diubah ✅
 ## Admin Flow
 
 ### **1. Admin Login Flow**
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin Klik 'Admin Panel'] --> B[Klik 'Kelola Produk']
+    B --> C[Admin Klik '+ Tambah Produk']
+    C --> D[Form Create Product Muncul]
+    D --> E[Input: Kategori dropdown]
+    E --> F[Input: Nama Produk]
+    F --> G[Input: Deskripsi]
+    G --> H[Input: Harga Rp]
+    H --> I[Input: Stok]
+    I --> J[Input: URL Gambar opsional]
+    J --> K{Set Featured?}
+    K -->|Yes| L[Check ☑ Featured]
+    K -->|No| M{Set Aktif?}
+    L --> M
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di List Produk] --> B[Admin Klik 'Edit' pada Produk]
+    B --> C[Form Edit Muncul dengan Data Existing]
+    C --> D[Admin Ubah Data yang Diperlukan]
+    D --> E[Admin Klik 'Update Produk']
+    E --> F[Validasi Input]
+    F --> G{Valid?}
+    G -->|No| H[Error Message]
+    H --> D
+    G -->|Yes| I[Update Database]
+    I --> J[Product Updated ✅]
+    J --> K[Redirect ke List Produk]
+```
+
+---
+
+    M -->|Yes| N[Check ☑ Aktif]
+    M -->|No| O[Admin Klik 'Simpan Produk']
+    N --> O
+    O --> P[Sistem Generate Slug dari Nama]
+    P --> Q[Produk Disimpan ke Database]
+    Q --> R[Product Created ✅]
+    R --> S[Redirect ke List Produk]
+```
+
+---
+
 ```
 Admin buka halaman Login (http://127.0.0.1:8000/login)
   ↓
@@ -324,11 +553,54 @@ Klik "Admin Panel"
   ↓
 Redirect ke Admin Dashboard (list pesanan)
 ```
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di List Produk] --> B[Admin Klik 'Hapus' pada Produk]
+    B --> C[Konfirmasi Modal Muncul]
+    C --> D[Tampil: Apakah yakin hapus produk nama?]
+    D --> E{Admin Klik OK?}
+    E -->|No| F[Cancel - Kembali ke List]
+    E -->|Yes| G[Delete Product dari Database]
+    G --> H[Delete Related Data: Images, Reviews, Cart Items]
+    H --> I[Product Deleted ✅]
+    I --> J[Refresh List Produk]
+```
+
+---
+
 
 ### **2. Admin Accept Order Flow**
 ```
 Admin di Dashboard → List Pesanan
   ↓
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di Dashboard] --> B[Input Keyword di Search Bar]
+    B --> C[Keyword Bisa Berupa:]
+    C --> D[Order Number contoh: ORD-20250112-001]
+    C --> E[Nama Customer]
+    C --> F[Email Customer]
+    D --> G[Admin Klik 🔍 Cari]
+    E --> G
+    F --> G
+    G --> H[Sistem Filter Orders by Keyword]
+    H --> I[Tampil Hasil Pencarian]
+    I --> J{Found?}
+    J -->|Yes| K[Tampil List Orders yang Match]
+    J -->|No| L[Tampil: Tidak Ada Hasil]
+    K --> M{Clear Filter?}
+    L --> M
+    M -->|Yes| N[Admin Klik 'Clear']
+    N --> O[Kembali ke All Orders]
+    M -->|No| K
+```
+
+---
+
 Admin klik salah satu pesanan (Status: Pending)
   ↓
 Halaman Detail Pesanan terbuka
@@ -338,6 +610,150 @@ Admin klik tombol "Terima Pesanan"
   ↓
 Modal "Pilih Metode Pembayaran" muncul
   ↓
+**Flowchart:**
+
+```mermaid
+flowchart TD
+    A[Admin di Kelola Produk] --> B[Input Keyword di Search Bar]
+    B --> C[Keyword Bisa Berupa:]
+    C --> D[Nama Produk]
+    C --> E[Deskripsi Produk]
+    C --> F[Nama Kategori]
+    D --> G[Admin Klik 🔍 Cari]
+    E --> G
+    F --> G
+    G --> H[Sistem Filter Products by Keyword]
+    H --> I[Tampil Hasil Pencarian]
+    I --> J{Found?}
+    J -->|Yes| K[Tampil List Products yang Match]
+    J -->|No| L[Tampil: Tidak Ada Hasil]
+```
+
+---
+
+### **10. Admin Kelola Add-ons & Image Editor** 🆕 (v1.3.0)
+
+```mermaid
+flowchart TD
+    A[Admin Login] --> B[Admin Dashboard]
+    B --> C[Klik Menu 'Add-ons Management']
+    C --> D[View Global Add-ons List]
+    D --> E{Action?}
+    E -->|Create| F[Klik '+ Tambah Add-on']
+    E -->|Edit| G[Klik 'Edit' pada Add-on]
+    F --> H[Form Create/Edit Add-on]
+    G --> H
+    H --> I[Input: Nama Add-on]
+    I --> J[Input: Deskripsi]
+    J --> K[Input: Harga]
+    K --> L[Input: Stok]
+    L --> M{Has Custom Message?}
+    M -->|Yes| N[Check ☑ Custom Message Flag]
+    M -->|No| O[Upload Images via URL]
+    N --> O
+    O --> P[Max 5 Images per Add-on]
+    P --> Q{Edit Image?}
+    Q -->|No| R[Set Availability Status]
+    Q -->|Yes| S[Klik 'Edit' pada Image]
+    S --> T[Image Editor Modal Muncul]
+    T --> U[Canvas Tools: Crop, Zoom, Rotate]
+    U --> V[Admin Adjust Image]
+    V --> W[Preview Real-time]
+    W --> X[Klik 'Save']
+    X --> Y[Auto Compress: 800px width, 80% quality, max 500KB]
+    Y --> Z[Convert to Base64 Data URL]
+    Z --> AA[Save to addon_images table as TEXT]
+    AA --> R
+    R --> AB[Set Sort Order]
+    AB --> AC[Klik 'Simpan Add-on']
+    AC --> AD[Add-on Saved ✅]
+    AD --> AE[Add-on Bisa Attached ke Multiple Products]
+```
+
+---
+
+### **11. Admin Website Settings - Banner Management** 🆕 (v1.3.0)
+
+```mermaid
+flowchart TD
+    A[Admin Dashboard] --> B[Klik Button 'Settings']
+    B --> C[Settings Page Muncul]
+    C --> D[Section: Homepage Banner]
+    D --> E[Input: Banner Image URL]
+    E --> F{Auto-resize?}
+    F -->|Yes| G[Check ☑ Auto-resize to 1920x600px]
+    F -->|No| H[Klik 'Update Banner']
+    G --> I[Canvas Resize Image]
+    I --> J[Convert to JPEG 90% quality]
+    J --> H
+    H --> K[Save to settings table]
+    K --> L[Key: home_banner_image]
+    L --> M[Value: Image URL or Base64]
+    M --> N[Banner Updated ✅]
+    N --> O[Real-time Preview Updated]
+    O --> P[Homepage Banner Changed]
+    P --> Q{Use Suggested Banner?}
+    Q -->|Yes| R[Klik Suggested Image dari Unsplash]
+    R --> E
+    Q -->|No| S[Settings Complete]
+```
+
+---
+
+### **12. Order Status Management Flow**
+
+```mermaid
+flowchart LR
+    A[Pending<br/>Menunggu Pembayaran] --> B{Admin Action?}
+    B -->|Customer Transfer & Kirim Bukti via WA| C[Processing<br/>Pesanan Diproses]
+    B -->|Customer Tidak Bayar| D[Cancelled<br/>Pesanan Dibatalkan]
+    C --> E{Admin Action?}
+    E -->|Pesanan Dikirim/Selesai| F[Completed<br/>Pesanan Selesai ✅]
+    E -->|Ada Masalah| D
+    D --> G[Stock Produk & Add-ons Dikembalikan]
+    F --> H[Customer Bisa Review Produk ⭐]
+```
+
+---
+
+### **13. Complete Shopping Journey (End-to-End)**
+
+```mermaid
+flowchart TD
+    A[🏠 User Buka Website] --> B[Browse Katalog Produk]
+    B --> C{User Action?}
+    C -->|Search| D[Search by Nama/Kategori]
+    C -->|Filter| E[Filter by Kategori]
+    D --> F[View Products]
+    E --> F
+    C -->|Browse| F
+    F --> G[Klik Product Detail]
+    G --> H[Lihat Gambar, Harga, Deskripsi, Reviews]
+    H --> I{Add Add-ons?}
+    I -->|Yes| J[Select Add-ons dari Dropdown]
+    J --> K[Set Quantity & Custom Message]
+    I -->|No| L[Set Product Quantity]
+    K --> L
+    L --> M{Purchase Method?}
+    M -->|Add to Cart| N[🛒 Tambah ke Cart]
+    M -->|Buy Now| O[➡️ Direct to Checkout]
+    N --> P[Lanjut Belanja atau Checkout]
+    P --> Q{Continue Shopping?}
+    Q -->|Yes| B
+    Q -->|No| O
+    O --> R[📋 Checkout Page]
+    R --> S[Review Order + Total]
+    S --> T[Submit Order]
+    T --> U[📧 Order Created]
+    U --> V[📄 Invoice Generated]
+    V --> W[💬 WhatsApp Admin untuk Pembayaran]
+    W --> X[💰 Transfer Pembayaran]
+    X --> Y[📱 Kirim Bukti Transfer via WA]
+    Y --> Z[👨‍💼 Admin Konfirmasi]
+    Z --> AA[✅ Order Status: Processing → Completed]
+    AA --> AB[⭐ Customer Bisa Review Produk]
+```
+
 Admin pilih salah satu metode:
   - DANA
   - GOPAY
