@@ -23,7 +23,7 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
    - Melihat katalog produk bunga
    - Filter by kategori
    - Detail produk dengan multiple images
-   - **Product Add-ons** dengan dropdown selection (v1.3.0 🆕)
+   - **Product Add-ons** dengan dropdown selection ( )
    - Custom message untuk add-ons tertentu
    - Tambah produk + add-ons ke keranjang
    - Direct Order (beli langsung tanpa keranjang)
@@ -45,8 +45,8 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
 6. **Riwayat Pesanan**
    - Melihat semua pesanan
    - Detail pesanan dengan add-ons
-   - **Status "Menunggu Pembayaran"** untuk pending orders (v1.3.0 🆕)
-   - **WhatsApp Button** dengan detailed message template (v1.3.0 🆕):
+   - **Status "Menunggu Pembayaran"** untuk pending orders ( )
+   - **WhatsApp Button** dengan detailed message template ( ):
      - Order number dan tanggal
      - Customer info lengkap
      - List produk + add-ons dengan custom messages
@@ -384,9 +384,9 @@ Password berhasil diubah ✅
 
 3. **Kelola Produk**
    - Tambah produk baru
-   - **Tambah Global Add-ons** untuk multiple products (v1.3.0 🆕)
-   - **Dropdown selection Add-ons** saat create/edit product (v1.3.0 🆕)
-   - **Image Editor** untuk add-on images (crop, zoom, rotate) (v1.3.0 🆕)
+   - **Tambah Global Add-ons** untuk multiple products ( )
+   - **Dropdown selection Add-ons** saat create/edit product ( )
+   - **Image Editor** untuk add-on images (crop, zoom, rotate) ( )
    - Edit produk
    - Hapus produk
    - Set produk sebagai Featured
@@ -956,4 +956,5 @@ flowchart TD
 
 - **Email:** support@floristshop.com
 - **WhatsApp:** +62 812-3456-7890
+
 
