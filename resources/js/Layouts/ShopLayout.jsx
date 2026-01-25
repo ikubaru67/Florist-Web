@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import LanguageSwitcher from '../Components/LanguageSwitcher';
 
 export default function ShopLayout({ children, auth }) {
     const [cartCount, setCartCount] = useState(0);
@@ -41,6 +42,11 @@ export default function ShopLayout({ children, auth }) {
                             >
                                 Katalog
                             </Link>
+
+                            {/* Language Switcher */}
+                            <div className="ml-2 pl-2 border-l border-gray-300">
+                                <LanguageSwitcher />
+                            </div>
 
                             {auth?.user ? (
                                 <>
@@ -192,6 +198,14 @@ export default function ShopLayout({ children, auth }) {
                             >
                                 Katalog
                             </Link>
+
+                            {/* Language Switcher Mobile */}
+                            <div className="px-3 py-2 border-t border-gray-200 mt-2 pt-2">
+                                <p className="text-xs font-semibold text-gray-500 mb-2">BAHASA</p>
+                                <div className="flex space-x-2">
+                                    <LanguageSwitcher />
+                                </div>
+                            </div>
 
                             {auth?.user ? (
                                 <>
