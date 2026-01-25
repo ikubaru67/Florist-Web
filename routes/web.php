@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductController;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,9 @@ Route::get('/health', function () {
         'timestamp' => now()->toIso8601String(),
     ], $dbStatus === 'connected' ? 200 : 503);
 })->name('health.check');
+
+// Language Switching
+Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
 
 // Home Page
 Route::get('/', [HomeController::class, 'index'])->name('home');

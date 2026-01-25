@@ -1,10 +1,14 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import LanguageSwitcher from '../Components/LanguageSwitcher';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
 
 export default function ShopLayout({ children, auth }) {
     const [cartCount, setCartCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { locale, translations } = usePage().props;
+
+    // Helper function to get translation
+    const t = (key) => translations?.[key] || key;
 
     useEffect(() => {
         if (auth?.user) {
@@ -34,19 +38,17 @@ export default function ShopLayout({ children, auth }) {
                                 href="/"
                                 className="px-3 py-2 text-sm font-medium text-gray-900 hover:text-pink-600 transition-colors"
                             >
-                                Home
+                                {t('home')}
                             </Link>
                             <Link
                                 href="/shop"
                                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
                             >
-                                Katalog
+                                {t('catalog')}
                             </Link>
 
-                            {/* Language Switcher */}
-                            <div className="ml-2 pl-2 border-l border-gray-300">
-                                <LanguageSwitcher />
-                            </div>
+                            {/* Language Switcher - Desktop */}
+                            <LanguageSwitcher currentLocale={locale} />
 
                             {auth?.user ? (
                                 <>
@@ -80,20 +82,20 @@ export default function ShopLayout({ children, auth }) {
                                         href="/orders"
                                         className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
                                     >
-                                        Pesanan
+                                        {t('orders')}
                                     </Link>
                                     <Link
                                         href="/profile"
                                         className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
                                     >
-                                        Profil
+                                        {t('profile')}
                                     </Link>
                                     {auth.user.is_admin === 1 && (
                                         <Link
                                             href="/admin"
                                             className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors"
                                         >
-                                            Admin
+                                            {t('admin_panel')}
                                         </Link>
                                     )}
                                     <Link
@@ -102,7 +104,7 @@ export default function ShopLayout({ children, auth }) {
                                         as="button"
                                         className="px-4 py-2 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
                                     >
-                                        Logout
+                                        {t('logout')}
                                     </Link>
                                 </>
                             ) : (
@@ -111,13 +113,13 @@ export default function ShopLayout({ children, auth }) {
                                         href="/login"
                                         className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
                                     >
-                                        Login
+                                        {t('login')}
                                     </Link>
                                     <Link
                                         href="/register"
                                         className="px-4 py-2 text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 transition-colors"
                                     >
-                                        Register
+                                        {t('register')}
                                     </Link>
                                 </>
                             )}
@@ -190,21 +192,18 @@ export default function ShopLayout({ children, auth }) {
                                 href="/"
                                 className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-pink-50 hover:text-pink-600 rounded-md"
                             >
-                                Home
+                                {t('home')}
                             </Link>
                             <Link
                                 href="/shop"
                                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
                             >
-                                Katalog
+                                {t('catalog')}
                             </Link>
 
-                            {/* Language Switcher Mobile */}
-                            <div className="px-3 py-2 border-t border-gray-200 mt-2 pt-2">
-                                <p className="text-xs font-semibold text-gray-500 mb-2">BAHASA</p>
-                                <div className="flex space-x-2">
-                                    <LanguageSwitcher />
-                                </div>
+                            {/* Language Switcher - Mobile */}
+                            <div className="px-3 py-2">
+                                <LanguageSwitcher currentLocale={locale} />
                             </div>
 
                             {auth?.user ? (
@@ -213,20 +212,20 @@ export default function ShopLayout({ children, auth }) {
                                         href="/orders"
                                         className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
                                     >
-                                        Pesanan Saya
+                                        {t('orders')}
                                     </Link>
                                     <Link
                                         href="/profile"
                                         className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
                                     >
-                                        Profil
+                                        {t('profile')}
                                     </Link>
                                     {auth.user.is_admin === 1 && (
                                         <Link
                                             href="/admin"
                                             className="block px-3 py-2 text-base font-medium text-purple-600 hover:bg-purple-50 hover:text-purple-800 rounded-md"
                                         >
-                                            Admin Panel
+                                            {t('admin_panel')}
                                         </Link>
                                     )}
                                     <Link
@@ -235,7 +234,7 @@ export default function ShopLayout({ children, auth }) {
                                         as="button"
                                         className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
                                     >
-                                        Logout
+                                        {t('logout')}
                                     </Link>
                                 </>
                             ) : (
@@ -244,13 +243,13 @@ export default function ShopLayout({ children, auth }) {
                                         href="/login"
                                         className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
                                     >
-                                        Login
+                                        {t('login')}
                                     </Link>
                                     <Link
                                         href="/register"
                                         className="block px-3 py-2 text-base font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-md text-center"
                                     >
-                                        Register
+                                        {t('register')}
                                     </Link>
                                 </>
                             )}
@@ -269,25 +268,25 @@ export default function ShopLayout({ children, auth }) {
                         <div>
                             <h3 className="text-lg font-semibold mb-4">Florist Shop</h3>
                             <p className="text-gray-400 text-sm">
-                                Toko bunga terbaik dengan berbagai pilihan bunga segar untuk setiap momen spesial Anda.
+                                {t('footer_description')}
                             </p>
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                            <h3 className="text-lg font-semibold mb-4">{t('quick_links')}</h3>
                             <ul className="space-y-2 text-sm">
-                                <li><Link href="/" className="text-gray-400 hover:text-white">Home</Link></li>
-                                <li><Link href="/shop" className="text-gray-400 hover:text-white">Katalog</Link></li>
-                                {auth?.user && <li><Link href="/orders" className="text-gray-400 hover:text-white">Pesanan Saya</Link></li>}
+                                <li><Link href="/" className="text-gray-400 hover:text-white">{t('home')}</Link></li>
+                                <li><Link href="/shop" className="text-gray-400 hover:text-white">{t('catalog')}</Link></li>
+                                {auth?.user && <li><Link href="/orders" className="text-gray-400 hover:text-white">{t('orders')}</Link></li>}
                             </ul>
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+                            <h3 className="text-lg font-semibold mb-4">{t('contact')}</h3>
                             <p className="text-gray-400 text-sm">Email: info@florist.com</p>
                             <p className="text-gray-400 text-sm">Phone: +62 123 4567 890</p>
                         </div>
                     </div>
                     <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400 text-sm">
-                        <p>&copy; 2025 Florist Shop. All rights reserved.</p>
+                        <p>&copy; 2025 Florist Shop. {t('all_rights_reserved')}</p>
                     </div>
                 </div>
             </footer>
