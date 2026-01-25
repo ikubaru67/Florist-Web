@@ -1,6 +1,8 @@
 ﻿# Florist Shop Website
 
-Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien.
+Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien. 🌸
+
+**🌍 Multi-Language Support**: Website ini mendukung 2 bahasa (Indonesia & English) untuk customer internasional.
 
 ---
 
@@ -12,12 +14,26 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
    - Forgot Password dengan verifikasi kode
    - Logout
 
-2. **Profil Management**
+2. **Multi-Language** 🆕
+   - 🇮🇩 Bahasa Indonesia (Default)
+   - 🇬🇧 English
+   - Language switcher di navbar
+   - Auto-detect browser language
+   - Preference tersimpan di session
+
+2. **Multi-Language** 🆕
+   - 🇮🇩 Bahasa Indonesia (Default)
+   - 🇬🇧 English
+   - Language switcher di navbar
+   - Auto-detect browser language
+   - Preference tersimpan di session
+
+3. **Profil Management**
    - Edit profil (Nama, Email, Phone, Alamat, Kota, Kode Pos)
    - Ganti password dengan verifikasi OTP
    - Delete account
 
-3. **Katalog & Shopping**
+4. **Katalog & Shopping**
    - Melihat katalog produk bunga
    - Filter by kategori
    - Detail produk dengan multiple images
@@ -26,21 +42,21 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
    - Tambah produk + add-ons ke keranjang
    - Direct Order (beli langsung tanpa keranjang)
 
-4. **Keranjang Belanja**
+5. **Keranjang Belanja**
    - Melihat semua item di keranjang
    - Update jumlah produk
    - Hapus item dari keranjang
    - Checkout semua item sekaligus
    - Cart icon dengan badge count
 
-5. **Pemesanan**
+6. **Pemesanan**
    - Order langsung dari detail produk (Direct Order)
    - Order dari keranjang (Cart Checkout)
    - Form otomatis terisi data user (nama, email, phone, alamat)
    - Input jumlah & catatan khusus
    - Generate invoice otomatis
 
-6. **Riwayat Pesanan**
+7. **Riwayat Pesanan**
    - Melihat semua pesanan
    - Detail pesanan dengan add-ons
    - **Status "Menunggu Pembayaran"** untuk pending orders ( )
