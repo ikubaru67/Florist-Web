@@ -16,19 +16,21 @@ class LanguageController extends Controller
      */
     public function switch(Request $request)
     {
-        $locale = $request->input('locale', 'en');
+        $locale = $request->input('locale', 'id');
         
         // Validate locale
         if (!in_array($locale, ['en', 'id'])) {
-            $locale = 'en';
+            $locale = 'id';
         }
         
         // Store locale in session
         Session::put('locale', $locale);
+        Session::save(); // Force save session immediately
         
-        // Set application locale
+        // Set application locale for current request
         App::setLocale($locale);
         
-        return back()->with('success', 'Language changed successfully');
+        // Return redirect to refresh page with new locale
+        return redirect()->back();
     }
 }

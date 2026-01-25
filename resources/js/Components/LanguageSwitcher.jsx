@@ -15,11 +15,9 @@ export default function LanguageSwitcher({ currentLocale = 'en' }) {
     const handleLanguageChange = (locale) => {
         router.post('/language/switch', { locale }, {
             preserveState: false,
-            preserveScroll: true,
+            preserveScroll: false,
             onSuccess: () => {
                 setIsOpen(false);
-                // Force reload to apply new translations
-                window.location.reload();
             }
         });
     };
