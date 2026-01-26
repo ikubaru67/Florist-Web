@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -30,23 +29,15 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $locale = app()->getLocale();
-        
-        // Load translations for current locale
-        $translationsPath = lang_path("{$locale}/messages.php");
-        $translations = [];
-        
-        if (File::exists($translationsPath)) {
-            $translations = include $translationsPath;
-        }
-        
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
-            'locale' => $locale,
-            'translations' => $translations,
+            'locale' => app()->getLocale(),
+            'translations' => function () {
+                return __('messages');
+            },
         ];
     }
 }

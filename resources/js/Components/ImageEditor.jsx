@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
+import Toast from '@/Components/Toast';
 
 export default function ImageEditor({ 
     imageUrl, 
@@ -14,6 +15,7 @@ export default function ImageEditor({
     const [rotation, setRotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [processing, setProcessing] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
         setCroppedAreaPixels(croppedAreaPixels);
@@ -99,7 +101,11 @@ export default function ImageEditor({
                 const sizeInKB = Math.round((dataUrl.length * 3) / 4 / 1024);
                 
                 if (sizeInKB > 500) {
-                    alert(`⚠️ Gambar terlalu besar (${sizeInKB}KB).\n\nSilakan:\n1. Upload gambar hasil crop ke Cloudinary manual\n2. Atau gunakan gambar dengan resolusi lebih kecil`);
+                    setToast({ 
+                        show: true, 
+                        message: `⚠️ Gambar terlalu besar (${sizeInKB}KB). Silakan upload ke Cloudinary manual atau gunakan gambar dengan resolusi lebih kecil.`, 
+                        type: 'warning' 
+                    });
                     setProcessing(false);
                     return;
                 }
@@ -109,7 +115,7 @@ export default function ImageEditor({
             };
         } catch (e) {
             console.error('Error cropping image:', e);
-            alert('Gagal memproses gambar');
+            setToast({ show: true, message: 'Gagal memproses gambar', type: 'error' });
             setProcessing(false);
         }
     };
@@ -238,6 +244,14 @@ export default function ImageEditor({
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </div>
     );
 }

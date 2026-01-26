@@ -6,13 +6,27 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+
+// Language Switcher
+Route::post('/locale', function () {
+    $locale = request()->input('locale');
+    if (in_array($locale, ['id', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return back();
+})->name('locale.switch');
+
+// Debug route untuk test translations
+Route::get('/test-translation', function () {
+    return Inertia::render('TestTranslation');
+});
 
 // Health Check Endpoint (for monitoring)
 Route::get('/health', function () {
@@ -30,9 +44,6 @@ Route::get('/health', function () {
         'timestamp' => now()->toIso8601String(),
     ], $dbStatus === 'connected' ? 200 : 503);
 })->name('health.check');
-
-// Language Switching
-Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
 
 // Home Page
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -83,8 +94,8 @@ Route::middleware('auth')->group(function () {
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Admin Dashboard - List Orders
-    Route::get('/', [AdminOrderController::class, 'index'])->name('dashboard');
+    // Admin Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Manage Orders
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -103,6 +114,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/categories', [\App\Http\Controllers\Admin\SettingController::class, 'storeCategory'])->name('settings.categories.store');
+    Route::put('/settings/categories/{id}', [\App\Http\Controllers\Admin\SettingController::class, 'updateCategory'])->name('settings.categories.update');
+    Route::delete('/settings/categories/{id}', [\App\Http\Controllers\Admin\SettingController::class, 'deleteCategory'])->name('settings.categories.delete');
+    Route::post('/settings/occasions', [\App\Http\Controllers\Admin\SettingController::class, 'storeOccasion'])->name('settings.occasions.store');
+    Route::put('/settings/occasions/{id}', [\App\Http\Controllers\Admin\SettingController::class, 'updateOccasion'])->name('settings.occasions.update');
+    Route::delete('/settings/occasions/{id}', [\App\Http\Controllers\Admin\SettingController::class, 'deleteOccasion'])->name('settings.occasions.delete');
 });
 
 require __DIR__.'/auth.php';

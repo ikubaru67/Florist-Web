@@ -72,125 +72,93 @@ export default function UpdatePasswordForm({ className = '' }) {
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Update Password
-                </h2>
+            <p className="text-sm text-gray-600 mb-6">
+                Pastikan akun Anda menggunakan password yang panjang dan acak agar tetap aman.
+            </p>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Pastikan akun Anda menggunakan password yang panjang dan acak agar tetap aman.
-                </p>
-            </header>
-
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
+            <form onSubmit={updatePassword} className="space-y-6">
                 <div>
-                    <InputLabel
-                        htmlFor="current_password"
-                        value="Password Saat Ini"
-                    />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Password Saat Ini</label>
+                    <input
                         id="current_password"
                         ref={currentPasswordInput}
-                        value={data.current_password}
-                        onChange={(e) =>
-                            setData('current_password', e.target.value)
-                        }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                        value={data.current_password}
+                        onChange={(e) => setData('current_password', e.target.value)}
                         autoComplete="current-password"
                     />
-
-                    <InputError
-                        message={errors.current_password}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.current_password} className="mt-2" />
                 </div>
 
                 {/* Verification Code Section */}
                 <div>
-                    <InputLabel
-                        htmlFor="verification_code"
-                        value="Kode Verifikasi"
-                    />
-                    
-                    <div className="flex gap-2 mt-1">
-                        <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kode Verifikasi</label>
+                    <div className="flex gap-3">
+                        <input
                             id="verification_code"
-                            value={data.verification_code}
-                            onChange={(e) =>
-                                setData('verification_code', e.target.value)
-                            }
                             type="text"
-                            className="block w-full"
+                            className="flex-1 px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all disabled:bg-gray-100"
+                            value={data.verification_code}
+                            onChange={(e) => setData('verification_code', e.target.value)}
                             placeholder="Masukkan kode 6 digit"
                             maxLength={6}
                             disabled={!codeSent}
                         />
-                        
                         <button
                             type="button"
                             onClick={sendVerificationCode}
                             disabled={sendingCode || !data.current_password}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            className="px-6 py-3.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap font-medium"
                         >
                             {sendingCode ? 'Mengirim...' : codeSent ? 'Kirim Ulang' : 'Kirim Kode'}
                         </button>
                     </div>
 
                     {codeSent && (
-                        <p className="mt-2 text-sm text-green-600">
-                            Kode verifikasi telah dikirim ke email Anda. Kode berlaku 10 menit.
+                        <p className="mt-2 text-sm text-emerald-600 font-medium">
+                            ✓ Kode verifikasi telah dikirim ke email Anda. Kode berlaku 10 menit.
                         </p>
                     )}
 
-                    <InputError
-                        message={errors.verification_code}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.verification_code} className="mt-2" />
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="Password Baru" />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Password Baru</label>
+                    <input
                         id="password"
                         ref={passwordInput}
+                        type="password"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
-                        type="password"
-                        className="mt-1 block w-full"
                         autoComplete="new-password"
                     />
-
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div>
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Konfirmasi Password"
-                    />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password</label>
+                    <input
                         id="password_confirmation"
-                        value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                         autoComplete="new-password"
                     />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Simpan</PrimaryButton>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-50 font-medium"
+                    >
+                        {processing ? 'Menyimpan...' : 'Update Password'}
+                    </button>
 
                     <Transition
                         show={recentlySuccessful}
@@ -199,8 +167,8 @@ export default function UpdatePasswordForm({ className = '' }) {
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            Tersimpan.
+                        <p className="text-sm text-emerald-600 font-medium">
+                            ✓ Tersimpan
                         </p>
                     </Transition>
                 </div>

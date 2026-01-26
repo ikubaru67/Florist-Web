@@ -11,7 +11,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $featuredProducts = Product::with('category')
+        $featuredProducts = Product::with(['category', 'images'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->where('is_featured', true)
@@ -23,7 +23,7 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        $latestProducts = Product::with('category')
+        $latestProducts = Product::with(['category', 'images'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->where('is_active', true)
@@ -33,7 +33,7 @@ class HomeController extends Controller
         
         $bannerImage = Setting::get('home_banner_image', 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1920&h=600&fit=crop');
 
-        return Inertia::render('Home', [
+        return Inertia::render('Welcome', [
             'featuredProducts' => $featuredProducts,
             'categories' => $categories,
             'latestProducts' => $latestProducts,

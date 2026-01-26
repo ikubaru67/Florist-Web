@@ -10,8 +10,10 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'name',
+        'name_en',
         'slug',
         'description',
+        'description_en',
         'price',
         'stock',
         'image',
@@ -19,6 +21,8 @@ class Product extends Model
         'is_featured',
         'is_active'
     ];
+
+    protected $appends = ['localized_name', 'localized_description'];
 
     protected $casts = [
         'images' => 'array',
@@ -36,6 +40,18 @@ class Product extends Model
                 $product->slug = Str::slug($product->name);
             }
         });
+    }
+
+    public function getLocalizedNameAttribute()
+    {
+        $locale = app()->getLocale();
+        return $locale === 'en' && !empty($this->name_en) ? $this->name_en : $this->name;
+    }
+
+    public function getLocalizedDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        return $locale === 'en' && !empty($this->description_en) ? $this->description_en : $this->description;
     }
 
     public function category()
@@ -63,10 +79,22 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    // Alias for productImages (for convenience)
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
     // Many-to-many relationship with Addon
     public function addons()
     {
         return $this->belongsToMany(Addon::class, 'addon_product');
+    }
+
+    // Many-to-many relationship with Occasion
+    public function occasions()
+    {
+        return $this->belongsToMany(Occasion::class);
     }
 
     // Old relationship - keeping for backward compatibility during migration

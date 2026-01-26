@@ -47,67 +47,59 @@ export default function DeleteUserForm({ className = '' }) {
 
     return (
         <section className={`space-y-6 ${className}`}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Hapus Akun
-                </h2>
+            <p className="text-sm text-gray-600">
+                Setelah akun Anda dihapus, semua data dan informasi akan dihapus secara permanen. 
+                Sebelum menghapus akun, silakan unduh data atau informasi yang ingin Anda simpan.
+            </p>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Setelah akun Anda dihapus, semua data dan informasi akan dihapus secara permanen. 
-                    Sebelum menghapus akun, silakan unduh data atau informasi yang ingin Anda simpan.
-                </p>
-            </header>
-
-            <DangerButton onClick={confirmUserDeletion}>
+            <button
+                type="button"
+                onClick={confirmUserDeletion}
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:shadow-lg hover:shadow-red-500/30 transition-all font-medium"
+            >
                 Hapus Akun
-            </DangerButton>
+            </button>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
+                <form onSubmit={deleteUser} className="p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
                         Apakah Anda yakin ingin menghapus akun Anda?
                     </h2>
 
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 mb-6">
                         Setelah akun dihapus, semua data akan hilang secara permanen. 
                         Masukkan password Anda untuk konfirmasi penghapusan akun.
                     </p>
 
-                    <div className="mt-6">
-                        <InputLabel
-                            htmlFor="password"
-                            value="Password"
-                            className="sr-only"
-                        />
-
-                        <TextInput
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input
                             id="password"
                             type="password"
-                            name="password"
                             ref={passwordInput}
+                            className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                             value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
-                            className="mt-1 block w-3/4"
-                            isFocused
-                            placeholder="Password"
+                            onChange={(e) => setData('password', e.target.value)}
+                            placeholder="Masukkan password Anda"
                         />
-
-                        <InputError
-                            message={errors.password}
-                            className="mt-2"
-                        />
+                        <InputError message={errors.password} className="mt-2" />
                     </div>
 
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                    <div className="flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={closeModal}
+                            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all font-medium"
+                        >
                             Batal
-                        </SecondaryButton>
-
-                        <DangerButton className="ms-3" disabled={processing}>
-                            Hapus Akun
-                        </DangerButton>
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:shadow-lg hover:shadow-red-500/30 transition-all disabled:opacity-50 font-medium"
+                        >
+                            {processing ? 'Menghapus...' : 'Hapus Akun'}
+                        </button>
                     </div>
                 </form>
             </Modal>

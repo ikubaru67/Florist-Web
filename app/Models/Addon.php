@@ -10,13 +10,17 @@ class Addon extends Model
 {
     protected $fillable = [
         'name',
+        'name_en',
         'description',
+        'description_en',
         'price',
         'stock',
         'is_available',
         'has_custom_message',
         'sort_order',
     ];
+
+    protected $appends = ['localized_name', 'localized_description'];
 
     protected $casts = [
         'price' => 'decimal:2',
@@ -38,5 +42,17 @@ class Addon extends Model
     public function images(): HasMany
     {
         return $this->hasMany(AddonImage::class)->orderBy('sort_order');
+    }
+
+    public function getLocalizedNameAttribute()
+    {
+        $locale = app()->getLocale();
+        return $locale === 'en' && !empty($this->name_en) ? $this->name_en : $this->name;
+    }
+
+    public function getLocalizedDescriptionAttribute()
+    {
+        $locale = app()->getLocale();
+        return $locale === 'en' && !empty($this->description_en) ? $this->description_en : $this->description;
     }
 }

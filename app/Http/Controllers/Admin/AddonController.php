@@ -59,7 +59,9 @@ class AddonController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name_en' => 'required|string|max:255',
+            'description' => 'required|string',
+            'description_en' => 'required|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'is_available' => 'boolean',
@@ -70,7 +72,9 @@ class AddonController extends Controller
 
         $addon = Addon::create([
             'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
+            'name_en' => $validated['name_en'],
+            'description' => $validated['description'],
+            'description_en' => $validated['description_en'],
             'price' => $validated['price'],
             'stock' => $validated['stock'],
             'is_available' => $validated['is_available'] ?? true,
@@ -114,7 +118,9 @@ class AddonController extends Controller
             'addon' => [
                 'id' => $addon->id,
                 'name' => $addon->name,
+                'name_en' => $addon->name_en,
                 'description' => $addon->description,
+                'description_en' => $addon->description_en,
                 'price' => $addon->price,
                 'stock' => $addon->stock,
                 'is_available' => $addon->is_available,
@@ -136,7 +142,9 @@ class AddonController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name_en' => 'required|string|max:255',
+            'description' => 'required|string',
+            'description_en' => 'required|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'is_available' => 'boolean',
@@ -147,7 +155,9 @@ class AddonController extends Controller
 
         $addon->update([
             'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
+            'name_en' => $validated['name_en'],
+            'description' => $validated['description'],
+            'description_en' => $validated['description_en'],
             'price' => $validated['price'],
             'stock' => $validated['stock'],
             'is_available' => $validated['is_available'] ?? true,

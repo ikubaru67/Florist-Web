@@ -3,10 +3,13 @@ import ProductCard from '@/Components/ProductCard';
 import StarRating from '@/Components/StarRating';
 import ReviewList from '@/Components/ReviewList';
 import ReviewForm from '@/Components/ReviewForm';
+import Toast from '@/Components/Toast';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function ProductDetail({ auth, product, relatedProducts, canReview, userOrder }) {
+    const { t } = useTranslation();
     const [quantity, setQuantity] = useState(1);
     const [processing, setProcessing] = useState(false);
     const [showReviewForm, setShowReviewForm] = useState(false);
@@ -17,6 +20,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
     const [lightboxImages, setLightboxImages] = useState([]);
     const [currentLightboxIndex, setCurrentLightboxIndex] = useState(0);
     const [imageTransition, setImageTransition] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     // Convert ratings to numbers
     const averageRating = parseFloat(product.reviews_avg_rating) || 0;
@@ -47,7 +51,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
 
         // Validate stock
         if (newQuantity > addon.stock) {
-            alert(`Stok add-on tidak mencukupi. Stok tersedia: ${addon.stock}`);
+            setToast({ show: true, message: `${t('addon_stock_insufficient')} ${addon.stock}`, type: 'warning' });
             return;
         }
 
@@ -143,11 +147,12 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                 setSelectedAddons({});
                 setAddonMessages({});
                 setProcessing(false);
-                // Reload page to update cart count
-                window.location.reload();
+                setToast({ show: true, message: 'Berhasil ditambahkan ke keranjang!', type: 'success' });
+                // Reload page to update cart count after short delay
+                setTimeout(() => window.location.reload(), 1000);
             },
             onError: (errors) => {
-                alert('Gagal menambahkan ke keranjang: ' + (errors.error || 'Silakan coba lagi'));
+                setToast({ show: true, message: 'Gagal menambahkan ke keranjang: ' + (errors.error || 'Silakan coba lagi'), type: 'error' });
                 setProcessing(false);
             }
         });
@@ -182,7 +187,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                 router.visit('/cart/checkout');
             },
             onError: (errors) => {
-                alert('Gagal memproses pesanan: ' + (errors.error || 'Silakan coba lagi'));
+                setToast({ show: true, message: 'Gagal memproses pesanan: ' + (errors.error || 'Silakan coba lagi'), type: 'error' });
                 setProcessing(false);
             }
         });
@@ -259,7 +264,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
 
                     {/* Product Info */}
                     <div className="order-2">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{product.localized_name || product.name}</h1>
                         
                         {/* Rating Display */}
                         <div className="flex items-center gap-4 mb-3">
@@ -270,7 +275,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                         </div>
 
                         <p className="text-sm text-gray-600 mb-4">
-                            Kategori: <span className="text-pink-600">{product.category.name}</span>
+                            {t('category')}: <span className="text-pink-600">{product.category.localized_name || product.category.name}</span>
                         </p>
 
                         <div className="mb-6">
@@ -280,14 +285,14 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                         </div>
 
                         <div className="mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-2">Deskripsi</h2>
-                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{product.description}</p>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('description')}</h2>
+                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{product.localized_description || product.description}</p>
                         </div>
 
                         <div className="mb-6">
                             <p className="text-sm text-gray-600">
-                                Stok: <span className={product.stock > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                                    {product.stock > 0 ? `${product.stock} tersedia` : 'Habis'}
+                                {t('stock')}: <span className={product.stock > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                                    {product.stock > 0 ? `${product.stock} ${t('available')}` : t('out_of_stock')}
                                 </span>
                             </p>
                         </div>
@@ -322,7 +327,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                                                                         <p className="text-sm text-gray-600 mt-1">{addon.description}</p>
                                                                     )}
                                                                     <p className="text-sm text-gray-500 mt-1">
-                                                                        Stok: {addon.stock}
+                                                                        {t('stock')}: {addon.stock}
                                                                     </p>
                                                                 </div>
                                                                 <span className="text-lg font-bold text-pink-600 ml-4">
@@ -356,7 +361,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                                                             {/* Quantity Selector */}
                                                             <div className="mb-3">
                                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                    Jumlah
+                                                                    {t('quantity')}
                                                                 </label>
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="flex items-center border border-gray-300 rounded-lg">
@@ -455,7 +460,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                                 {/* Quantity Selector */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Jumlah
+                                        {t('quantity')}
                                     </label>
                                     <div className="flex items-center border border-gray-300 rounded-lg w-full sm:w-36">
                                         <button
@@ -483,18 +488,18 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                                         disabled={processing}
                                         className="flex-1 bg-white border-2 border-pink-600 text-pink-600 py-3 sm:py-3 rounded-lg font-semibold hover:bg-pink-50 transition-colors disabled:opacity-50 text-sm sm:text-base"
                                     >
-                                        🛒 Tambah ke Keranjang
+                                        🛒 {t('add_to_cart')}
                                     </button>
                                     <button
                                         onClick={handleBuyNow}
                                         className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 sm:py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors text-sm sm:text-base"
                                     >
-                                        ⚡ Beli Sekarang
+                                        ⚡ {t('buy_now')}
                                     </button>
                                 </div>
                                 
                                 <p className="text-center text-xs sm:text-sm text-gray-600">
-                                    💬 Pembayaran via WhatsApp setelah order
+                                    💬 {t('payment_via_whatsapp')}
                                 </p>
                             </div>
                         )}
@@ -504,7 +509,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                 {/* Reviews Section */}
                 <div className="mt-12 sm:mt-16">
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
-                        ⭐ Rating & Review
+                        ⭐ {t('rating_and_review')}
                     </h2>
 
                     {/* Review Form for Eligible Users */}
@@ -552,7 +557,7 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-12 sm:mt-16">
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Produk Terkait</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">{t('related_products')}</h2>
                         <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                             {relatedProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />
@@ -632,6 +637,14 @@ export default function ProductDetail({ auth, product, relatedProducts, canRevie
                     </div>
                 </div>
             )}
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </ShopLayout>
     );
 }

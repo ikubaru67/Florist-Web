@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import ShopLayout from '@/Layouts/ShopLayout';
+import Toast from '@/Components/Toast';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function Show({ auth, order }) {
     const [showAcceptModal, setShowAcceptModal] = useState(false);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('DANA');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     const handleAccept = (e) => {
         e.preventDefault();
@@ -16,22 +18,38 @@ export default function Show({ auth, order }) {
             onSuccess: () => {
                 setShowAcceptModal(false);
                 setIsSubmitting(false);
+                setToast({ show: true, message: 'Order accepted successfully!', type: 'success' });
             },
             onError: () => {
                 setIsSubmitting(false);
+                setToast({ show: true, message: 'Failed to accept order. Please try again.', type: 'error' });
             }
         });
     };
 
     const handleReject = () => {
         if (confirm('Tolak pesanan ini? Stock akan dikembalikan.')) {
-            router.patch(route('admin.orders.reject', order.id));
+            router.patch(route('admin.orders.reject', order.id), {
+                onSuccess: () => {
+                    setToast({ show: true, message: 'Order rejected successfully!', type: 'success' });
+                },
+                onError: () => {
+                    setToast({ show: true, message: 'Failed to reject order. Please try again.', type: 'error' });
+                }
+            });
         }
     };
 
     const handleComplete = () => {
         if (confirm('Tandai pesanan sebagai selesai?')) {
-            router.patch(route('admin.orders.complete', order.id));
+            router.patch(route('admin.orders.complete', order.id), {
+                onSuccess: () => {
+                    setToast({ show: true, message: 'Order marked as completed!', type: 'success' });
+                },
+                onError: () => {
+                    setToast({ show: true, message: 'Failed to complete order. Please try again.', type: 'error' });
+                }
+            });
         }
     };
 
@@ -258,6 +276,14 @@ export default function Show({ auth, order }) {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </ShopLayout>
     );
 }

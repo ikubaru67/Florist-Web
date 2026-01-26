@@ -1,9 +1,11 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import Toast from '@/Components/Toast';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function CartCheckout({ auth, cartItems, total, user }) {
     const [processing, setProcessing] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
     const [formData, setFormData] = useState({
         shipping_name: user.name || '',
         shipping_email: user.email || '',
@@ -29,7 +31,7 @@ export default function CartCheckout({ auth, cartItems, total, user }) {
             onSuccess: () => {
             },
             onError: (errors) => {
-                alert('Gagal membuat pesanan: ' + (errors.error || 'Silakan coba lagi'));
+                setToast({ show: true, message: 'Gagal membuat pesanan: ' + (errors.error || 'Silakan coba lagi'), type: 'error' });
                 setProcessing(false);
             },
             onFinish: () => {
@@ -231,6 +233,14 @@ export default function CartCheckout({ auth, cartItems, total, user }) {
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </ShopLayout>
     );
 }

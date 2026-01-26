@@ -1,52 +1,29 @@
-import ShopLayout from '@/Layouts/ShopLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { ArrowLeft, Save, Package, X, Plus } from 'lucide-react';
 
-export default function Create({ auth, categories, availableAddons }) {
+export default function Create({ categories, availableAddons, occasions }) {
     const { data, setData, post, processing, errors } = useForm({
         category_id: '',
         name: '',
+        name_en: '',
         description: '',
+        description_en: '',
         price: '',
         stock: '',
         image: '',
-        additional_images: [''], // Array untuk gambar tambahan
-        selected_addons: [], // Array ID addon yang dipilih
+        additional_images: [''],
+        selected_addons: [],
+        selected_occasions: [],
         is_featured: false,
         is_active: true,
     });
-
-    const [showDropdown, setShowDropdown] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route('admin.products.store'));
     };
 
-    // Add addon from dropdown
-    const addAddon = (addonId) => {
-        if (!data.selected_addons.includes(addonId)) {
-            setData('selected_addons', [...data.selected_addons, addonId]);
-        }
-        setShowDropdown(false);
-    };
-
-    // Remove addon
-    const removeAddon = (addonId) => {
-        setData('selected_addons', data.selected_addons.filter(id => id !== addonId));
-    };
-
-    // Get selected addon objects
-    const selectedAddonObjects = availableAddons?.filter(addon => 
-        data.selected_addons.includes(addon.id)
-    ) || [];
-
-    // Get available (not selected) addons for dropdown
-    const availableForSelection = availableAddons?.filter(addon => 
-        !data.selected_addons.includes(addon.id)
-    ) || [];
-
-    // Additional image functions
     const addAdditionalImage = () => {
         if (data.additional_images.length < 5) {
             setData('additional_images', [...data.additional_images, '']);
@@ -63,410 +40,394 @@ export default function Create({ auth, categories, availableAddons }) {
         setData('additional_images', newImages);
     };
 
+    const toggleAddon = (addonId) => {
+        if (data.selected_addons.includes(addonId)) {
+            setData('selected_addons', data.selected_addons.filter(id => id !== addonId));
+        } else {
+            setData('selected_addons', [...data.selected_addons, addonId]);
+        }
+    };
+
+    const toggleOccasion = (occasionId) => {
+        if (data.selected_occasions.includes(occasionId)) {
+            setData('selected_occasions', data.selected_occasions.filter(id => id !== occasionId));
+        } else {
+            setData('selected_occasions', [...data.selected_occasions, occasionId]);
+        }
+    };
+
     return (
-        <ShopLayout auth={auth}>
-            <Head title="Tambah Produk" />
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
+            <Head title="Add New Product" />
 
-            <div className="py-12">
-                <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            <h3 className="text-2xl font-bold mb-6">Tambah Produk Baru</h3>
-                            <form onSubmit={handleSubmit}>
-                                {/* Category */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Kategori <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={data.category_id}
-                                        onChange={(e) => setData('category_id', e.target.value)}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        <option value="">Pilih Kategori</option>
-                                        {categories.map((category) => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.category_id && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.category_id}</p>
-                                    )}
-                                </div>
-
-                                {/* Name */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nama Produk <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="Contoh: Bunga Mawar Merah"
-                                    />
-                                    {errors.name && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                                    )}
-                                </div>
-
-                                {/* Description */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Deskripsi <span className="text-red-500">*</span>
-                                    </label>
-                                    <textarea
-                                        value={data.description}
-                                        onChange={(e) => setData('description', e.target.value)}
-                                        rows="4"
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="Deskripsi produk..."
-                                    />
-                                    {errors.description && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-                                    )}
-                                </div>
-
-                                {/* Price */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Harga <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="flex items-center">
-                                        <span className="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">
-                                            Rp
-                                        </span>
-                                        <input
-                                            type="number"
-                                            value={data.price}
-                                            onChange={(e) => setData('price', e.target.value)}
-                                            className="flex-1 border-gray-300 rounded-r-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            placeholder="0"
-                                            min="0"
-                                            step="1000"
-                                        />
-                                    </div>
-                                    {errors.price && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-                                    )}
-                                </div>
-
-                                {/* Stock */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Stok <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={data.stock}
-                                        onChange={(e) => setData('stock', e.target.value)}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="0"
-                                        min="0"
-                                    />
-                                    {errors.stock && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.stock}</p>
-                                    )}
-                                </div>
-
-                                {/* Image URL */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        URL Gambar Produk
-                                    </label>
-                                    <input
-                                        type="url"
-                                        value={data.image}
-                                        onChange={(e) => setData('image', e.target.value)}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="https://res.cloudinary.com/... atau URL gambar lainnya"
-                                    />
-                                    {errors.image && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-                                    )}
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        💡 Upload gambar ke <a href="https://cloudinary.com" target="_blank" className="text-blue-600 hover:underline">Cloudinary</a> lalu paste URL-nya di sini
-                                    </p>
-                                    {data.image && (
-                                        <div className="mt-3">
-                                            <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                                            <img
-                                                src={data.image}
-                                                alt="Preview"
-                                                className="h-40 w-40 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                                                onError={(e) => {
-                                                    e.target.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Additional Images */}
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Gambar Tambahan (Opsional)
-                                    </label>
-                                    <p className="text-xs text-gray-500 mb-3">
-                                        Tambahkan hingga 5 gambar produk tambahan untuk galeri
-                                    </p>
-                                    
-                                    {data.additional_images.map((imgUrl, index) => (
-                                        <div key={index} className="mb-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                                            <div className="flex items-start gap-3">
-                                                <div className="flex-1">
-                                                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                                                        Gambar #{index + 1}
-                                                    </label>
-                                                    <input
-                                                        type="url"
-                                                        value={imgUrl}
-                                                        onChange={(e) => {
-                                                            const newImages = [...data.additional_images];
-                                                            newImages[index] = e.target.value;
-                                                            setData('additional_images', newImages);
-                                                        }}
-                                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                                        placeholder="https://res.cloudinary.com/..."
-                                                    />
-                                                </div>
-                                                
-                                                {/* Preview thumbnail */}
-                                                {imgUrl && (
-                                                    <img
-                                                        src={imgUrl}
-                                                        alt={`Preview ${index + 1}`}
-                                                        className="h-16 w-16 object-cover rounded border border-gray-200"
-                                                        onError={(e) => e.target.style.display = 'none'}
-                                                    />
-                                                )}
-                                                
-                                                {/* Remove button */}
-                                                {data.additional_images.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const newImages = data.additional_images.filter((_, i) => i !== index);
-                                                            setData('additional_images', newImages);
-                                                        }}
-                                                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition text-sm"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    
-                                    {/* Add more button */}
-                                    {data.additional_images.length < 5 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setData('additional_images', [...data.additional_images, ''])}
-                                            className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-400 hover:text-blue-600 transition"
-                                        >
-                                            ➕ Tambah Gambar
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Add-ons Section - Dropdown Style */}
-                                <div className="mb-6 border-t pt-6">
-                                    <div className="mb-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div>
-                                                <h4 className="text-lg font-semibold text-gray-800">Add-ons untuk Produk Ini</h4>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    Klik tombol di bawah untuk menambah add-on. Kelola add-ons di{' '}
-                                                    <Link 
-                                                        href={route('admin.addons.index')} 
-                                                        className="text-pink-600 hover:underline"
-                                                        target="_blank"
-                                                    >
-                                                        halaman Kelola Add-ons
-                                                    </Link>
-                                                </p>
-                                            </div>
-                                            
-                                            {/* Dropdown Button */}
-                                            <div className="relative">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowDropdown(!showDropdown)}
-                                                    className="px-5 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2 whitespace-nowrap text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    disabled={availableForSelection.length === 0}
-                                                >
-                                                    ➕ Tambah Add-on
-                                                    <span className={`transform transition text-xs ${showDropdown ? 'rotate-180' : ''}`}>▼</span>
-                                                </button>
-                                                
-                                                {/* Dropdown Menu */}
-                                                {showDropdown && availableForSelection.length > 0 && (
-                                                    <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-96 overflow-y-auto">
-                                                        {availableForSelection.map((addon) => (
-                                                            <button
-                                                                    key={addon.id}
-                                                                    type="button"
-                                                                    onClick={() => addAddon(addon.id)}
-                                                                    className="w-full px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left flex items-center gap-3"
-                                                                >
-                                                                    {addon.images && addon.images.length > 0 && (
-                                                                        <img
-                                                                            src={addon.images[0].url}
-                                                                            alt={addon.name}
-                                                                            className="h-12 w-12 object-cover rounded"
-                                                                        />
-                                                                    )}
-                                                                    <div className="flex-1">
-                                                                        <div className="font-semibold text-gray-900">{addon.name}</div>
-                                                                        <div className="text-sm text-pink-600">
-                                                                            Rp {new Intl.NumberFormat('id-ID').format(addon.price)}
-                                                                        </div>
-                                                                    </div>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Selected Addons List */}
-                                    {selectedAddonObjects.length === 0 ? (
-                                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                                            {availableAddons && availableAddons.length === 0 ? (
-                                                <>
-                                                    <p className="text-gray-400 mb-3">Belum ada add-on global.</p>
-                                                    <Link
-                                                        href={route('admin.addons.create')}
-                                                        className="inline-block px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
-                                                    >
-                                                        Buat Add-on Pertama
-                                                    </Link>
-                                                </>
-                                            ) : (
-                                                <p className="text-gray-400">Belum ada add-on dipilih. Klik "Tambah Add-on" untuk memilih.</p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {selectedAddonObjects.map((addon) => (
-                                                <div 
-                                                    key={addon.id} 
-                                                    className="p-4 border-2 border-green-500 bg-green-50 rounded-lg"
-                                                >
-                                                    <div className="flex items-start gap-4">
-                                                        {/* Images */}
-                                                        {addon.images && addon.images.length > 0 && (
-                                                            <div className="flex gap-1">
-                                                                {addon.images.slice(0, 2).map((img, idx) => (
-                                                                    <img
-                                                                        key={idx}
-                                                                        src={img.url}
-                                                                        alt={addon.name}
-                                                                        className="h-16 w-16 object-cover rounded"
-                                                                    />
-                                                                ))}
-                                                                {addon.images.length > 2 && (
-                                                                    <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-600">
-                                                                        +{addon.images.length - 2}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        {/* Info */}
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <h5 className="font-semibold text-gray-900">{addon.name}</h5>
-                                                                <span className="text-pink-600 font-semibold">
-                                                                    Rp {new Intl.NumberFormat('id-ID').format(addon.price)}
-                                                                </span>
-                                                            </div>
-                                                            
-                                                            {addon.description && (
-                                                                <p className="text-sm text-gray-600 mb-2">{addon.description}</p>
-                                                            )}
-                                                            
-                                                            <div className="flex gap-3 text-xs">
-                                                                <span className="px-2 py-1 bg-white rounded">
-                                                                    Stok: {addon.stock}
-                                                                </span>
-                                                                {addon.has_custom_message && (
-                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                                                                        📝 Pesan Custom
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Remove Button */}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeAddon(addon.id)}
-                                                            className="px-3 py-2 text-red-600 hover:bg-red-100 rounded transition"
-                                                        >
-                                                            🗑️ Hapus
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {selectedAddonObjects.length > 0 && (
-                                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                                            ✓ {selectedAddonObjects.length} add-on dipilih untuk produk ini
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Checkboxes */}
-                                <div className="mb-4 space-y-2">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.is_featured}
-                                            onChange={(e) => setData('is_featured', e.target.checked)}
-                                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Tandai sebagai Featured</span>
-                                    </label>
-
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.is_active}
-                                            onChange={(e) => setData('is_active', e.target.checked)}
-                                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Produk Aktif</span>
-                                    </label>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center justify-end gap-4 mt-6">
-                                    <Link
-                                        href={route('admin.products.index')}
-                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                                    >
-                                        Batal
-                                    </Link>
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-                                    >
-                                        {processing ? 'Menyimpan...' : 'Simpan Produk'}
-                                    </button>
-                                </div>
-                            </form>
+            {/* Header */}
+            <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-10">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href={route('admin.products.index')}
+                            className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                        </Link>
+                        <div className="min-w-0">
+                            <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+                            <p className="text-sm text-gray-600 mt-0.5">
+                                Fill in the details to create a new product
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </ShopLayout>
+
+            {/* Form Content */}
+            <div className="flex-1 overflow-y-auto pb-24">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Basic Information */}
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+                            <div className="mb-6">
+                                <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
+                                <p className="text-sm text-gray-500 mt-1">Enter the main details about your product</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Product Name - Bilingual */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2.5">
+                                        Product Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">Bahasa Indonesia</label>
+                                            <input
+                                                type="text"
+                                                value={data.name}
+                                                onChange={e => setData('name', e.target.value)}
+                                                className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                                placeholder="Contoh: Bunga Mawar Merah"
+                                                required
+                                            />
+                                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">English Version</label>
+                                            <input
+                                                type="text"
+                                                value={data.name_en}
+                                                onChange={e => setData('name_en', e.target.value)}
+                                                className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                                placeholder="Example: Red Rose Flower"
+                                                required
+                                            />
+                                            {errors.name_en && <p className="text-red-500 text-sm mt-1">{errors.name_en}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Description - Bilingual */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2.5">
+                                        Description <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">Bahasa Indonesia</label>
+                                            <textarea
+                                                value={data.description}
+                                                onChange={e => setData('description', e.target.value)}
+                                                rows="4"
+                                                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-none"
+                                                placeholder="Deskripsi produk..."
+                                                required
+                                            />
+                                            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">English Version</label>
+                                            <textarea
+                                                value={data.description_en}
+                                                onChange={e => setData('description_en', e.target.value)}
+                                                rows="4"
+                                                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-none"
+                                                placeholder="Product description..."
+                                                required
+                                            />
+                                            {errors.description_en && <p className="text-red-500 text-sm mt-1">{errors.description_en}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Price, Category, Stock */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div>
+                                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2.5">
+                                            Price <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            id="price"
+                                            type="number"
+                                            value={data.price}
+                                            onChange={e => setData('price', e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                            placeholder="450000"
+                                            required
+                                        />
+                                        {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2.5">
+                                            Category <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            id="category"
+                                            value={data.category_id}
+                                            onChange={e => setData('category_id', e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                            required
+                                        >
+                                            <option value="">Select category</option>
+                                            {categories.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.category_id && <p className="text-red-500 text-sm mt-1">{errors.category_id}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2.5">
+                                            Stock <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            id="stock"
+                                            type="number"
+                                            value={data.stock}
+                                            onChange={e => setData('stock', e.target.value)}
+                                            className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                            placeholder="10"
+                                            required
+                                        />
+                                        {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Product Images */}
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+                            <div className="mb-6">
+                                <h2 className="text-xl font-bold text-gray-900">Product Images</h2>
+                                <p className="text-sm text-gray-500 mt-1">Add product images (URLs)</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Main Image */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Main Image <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.image}
+                                        onChange={e => setData('image', e.target.value)}
+                                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                        placeholder="https://example.com/image.jpg"
+                                        required
+                                    />
+                                    {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+                                </div>
+
+                                {/* Additional Images */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Additional Images (Optional)
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={addAdditionalImage}
+                                            disabled={data.additional_images.length >= 5}
+                                            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 disabled:opacity-50"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Add Image
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {data.additional_images.map((url, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={url}
+                                                    onChange={e => updateAdditionalImage(index, e.target.value)}
+                                                    className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                                    placeholder={`Image ${index + 1} URL`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeAdditionalImage(index)}
+                                                    className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Product Options */}
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6 lg:p-8">
+                            <div className="mb-6">
+                                <h2 className="text-xl font-bold text-gray-900">Product Options</h2>
+                                <p className="text-sm text-gray-500 mt-1">Configure additional settings</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Available Add-ons */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                                        Available Add-ons
+                                    </label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {availableAddons && availableAddons.map((addon) => (
+                                            <label
+                                                key={addon.id}
+                                                className="flex items-start gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl hover:border-emerald-300 transition-all cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.selected_addons.includes(addon.id)}
+                                                    onChange={() => toggleAddon(addon.id)}
+                                                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 mt-1"
+                                                />
+                                                
+                                                {/* Add-on Image */}
+                                                {addon.images && addon.images.length > 0 ? (
+                                                    <img
+                                                        src={addon.images[0].url}
+                                                        alt={addon.name}
+                                                        className="h-16 w-16 object-cover rounded border-2 border-gray-200"
+                                                        onError={(e) => e.target.style.display = 'none'}
+                                                    />
+                                                ) : (
+                                                    <div className="h-16 w-16 flex items-center justify-center bg-gray-100 rounded border-2 border-gray-200">
+                                                        <span className="text-2xl">🎁</span>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Add-on Details */}
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900">{addon.name}</div>
+                                                    <div className="flex items-center gap-3 mt-1 text-sm">
+                                                        <span className="text-pink-600 font-medium">
+                                                            Rp {new Intl.NumberFormat('id-ID').format(addon.price)}
+                                                        </span>
+                                                        <span className="text-gray-600">
+                                                            Stock: {addon.stock}
+                                                        </span>
+                                                        {addon.has_custom_message && (
+                                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                                💬 Custom Message
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {addon.description && (
+                                                        <p className="text-sm text-gray-500 mt-1">{addon.description}</p>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Occasions */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                                        🎉 Occasions (Optional)
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {occasions && occasions.map((occasion) => (
+                                            <label
+                                                key={occasion.id}
+                                                className={`
+                                                    flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all
+                                                    ${data.selected_occasions.includes(occasion.id)
+                                                        ? 'bg-purple-50 border-2 border-purple-500'
+                                                        : 'bg-white border-2 border-gray-300 hover:border-purple-300'
+                                                    }
+                                                `}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.selected_occasions.includes(occasion.id)}
+                                                    onChange={() => toggleOccasion(occasion.id)}
+                                                    className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900">{occasion.name}</div>
+                                                    {occasion.name_en && (
+                                                        <div className="text-sm text-gray-600">{occasion.name_en}</div>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Status Toggles */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <label className="flex items-center gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl hover:border-emerald-300 transition-all cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.is_featured}
+                                            onChange={e => setData('is_featured', e.target.checked)}
+                                            className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                                        />
+                                        <span className="text-gray-900 font-medium">Featured Product</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl hover:border-emerald-300 transition-all cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={data.is_active}
+                                            onChange={e => setData('is_active', e.target.checked)}
+                                            className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                                        />
+                                        <span className="text-gray-900 font-medium">
+                                            {data.is_active ? 'Visible to customers' : 'Hidden from customers'}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6">
+                            <div className="flex items-center justify-between gap-4">
+                                <Link
+                                    href={route('admin.products.index')}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </Link>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <Save className="w-5 h-5" />
+                                    <span>{processing ? 'Creating...' : 'Create Product'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     );
 }

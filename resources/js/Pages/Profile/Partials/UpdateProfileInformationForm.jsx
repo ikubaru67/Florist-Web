@@ -30,108 +30,90 @@ export default function UpdateProfileInformation({
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Informasi Profil
-                </h2>
+            <p className="text-sm text-gray-600 mb-6">
+                Update informasi profil dan alamat email akun Anda.
+            </p>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Update informasi profil dan alamat email akun Anda.
-                </p>
-            </header>
-
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <form onSubmit={submit} className="space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="Nama" />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nama</label>
+                    <input
                         id="name"
-                        className="mt-1 block w-full"
+                        type="text"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         required
-                        isFocused
                         autoComplete="name"
                     />
-
                     <InputError className="mt-2" message={errors.name} />
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
                         autoComplete="username"
                     />
-
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="phone" value="Nomor Telepon" />
-
-                    <TextInput
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
+                    <input
                         id="phone"
                         type="tel"
-                        className="mt-1 block w-full"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                         value={data.phone}
                         onChange={(e) => setData('phone', e.target.value)}
                         autoComplete="tel"
                         placeholder="08123456789"
                     />
-
                     <InputError className="mt-2" message={errors.phone} />
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="address" value="Alamat Lengkap" />
-
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap</label>
                     <textarea
                         id="address"
-                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
                         value={data.address}
                         onChange={(e) => setData('address', e.target.value)}
                         rows="3"
                         placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"
                     />
-
                     <InputError className="mt-2" message={errors.address} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <InputLabel htmlFor="city" value="Kota" />
-
-                        <TextInput
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Kota</label>
+                        <input
                             id="city"
                             type="text"
-                            className="mt-1 block w-full"
+                            className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                             value={data.city}
                             onChange={(e) => setData('city', e.target.value)}
                             placeholder="Jakarta"
                         />
-
                         <InputError className="mt-2" message={errors.city} />
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="postal_code" value="Kode Pos" />
-
-                        <TextInput
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Kode Pos</label>
+                        <input
                             id="postal_code"
                             type="text"
-                            className="mt-1 block w-full"
+                            className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                             value={data.postal_code}
                             onChange={(e) => setData('postal_code', e.target.value)}
                             placeholder="12345"
                         />
-
                         <InputError className="mt-2" message={errors.postal_code} />
                     </div>
                 </div>
@@ -159,7 +141,13 @@ export default function UpdateProfileInformation({
                 )}
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Simpan</PrimaryButton>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all disabled:opacity-50 font-medium"
+                    >
+                        {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                    </button>
 
                     <Transition
                         show={recentlySuccessful}
@@ -168,8 +156,8 @@ export default function UpdateProfileInformation({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            Tersimpan.
+                        <p className="text-sm text-emerald-600 font-medium">
+                            ✓ Tersimpan
                         </p>
                     </Transition>
                 </div>

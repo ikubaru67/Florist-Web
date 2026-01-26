@@ -2,8 +2,10 @@ import ShopLayout from '@/Layouts/ShopLayout';
 import ProductCard from '@/Components/ProductCard';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function ShopIndex({ auth, products, categories, filters }) {
+    const { t } = useTranslation();
     const [search, setSearch] = useState(filters.search || '');
 
     const handleSearch = (e) => {
@@ -22,7 +24,7 @@ export default function ShopIndex({ auth, products, categories, filters }) {
             <Head title="Shop - Florist" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">Shop</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('shop')}</h1>
 
                 {/* Filters */}
                 <div className="mb-8 space-y-4">
@@ -32,14 +34,14 @@ export default function ShopIndex({ auth, products, categories, filters }) {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Cari produk..."
+                            placeholder={t('search_products')}
                             className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                         />
                         <button
                             type="submit"
                             className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
                         >
-                            Cari
+                            {t('search')}
                         </button>
                     </form>
 
@@ -47,14 +49,14 @@ export default function ShopIndex({ auth, products, categories, filters }) {
                     <div className="flex flex-wrap gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Kategori
+                                {t('category')}
                             </label>
                             <select
                                 value={filters.category || ''}
                                 onChange={(e) => handleFilterChange('category', e.target.value)}
                                 className="rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                             >
-                                <option value="">Semua Kategori</option>
+                                <option value="">{t('all_categories')}</option>
                                 {categories.map((category) => (
                                     <option key={category.id} value={category.slug}>
                                         {category.name} ({category.products_count})
@@ -65,17 +67,17 @@ export default function ShopIndex({ auth, products, categories, filters }) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Urutkan
+                                {t('sort')}
                             </label>
                             <select
                                 value={filters.sort || 'latest'}
                                 onChange={(e) => handleFilterChange('sort', e.target.value)}
                                 className="rounded-lg border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                             >
-                                <option value="latest">Terbaru</option>
-                                <option value="name">Nama A-Z</option>
-                                <option value="price_low">Harga Terendah</option>
-                                <option value="price_high">Harga Tertinggi</option>
+                                <option value="latest">{t('sort_latest')}</option>
+                                <option value="name">{t('sort_name')}</option>
+                                <option value="price_low">{t('sort_price_low')}</option>
+                                <option value="price_high">{t('sort_price_high')}</option>
                             </select>
                         </div>
                     </div>
@@ -110,7 +112,7 @@ export default function ShopIndex({ auth, products, categories, filters }) {
                     </>
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-gray-600 text-lg">Tidak ada produk ditemukan.</p>
+                        <p className="text-gray-600 text-lg">{t('no_products_found')}</p>
                     </div>
                 )}
             </div>

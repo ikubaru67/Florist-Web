@@ -7,13 +7,17 @@ use Illuminate\Support\Str;
 
 class Category extends Model
 {
+
     protected $fillable = [
         'name',
-        'slug',
-        'description',
-        'image'
+        'name_en',
+        'slug'
     ];
 
+    protected $appends = ['localized_name'];
+
+    // protected static function boot()
+    // {
     protected static function boot()
     {
         parent::boot();
@@ -23,6 +27,12 @@ class Category extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
+    }
+
+    public function getLocalizedNameAttribute()
+    {
+        $locale = app()->getLocale();
+        return $locale === 'en' && !empty($this->name_en) ? $this->name_en : $this->name;
     }
 
     public function products()

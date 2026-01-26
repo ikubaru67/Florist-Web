@@ -1,15 +1,17 @@
 import React from 'react';
 import StarRating from './StarRating';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function ReviewList({ reviews, averageRating, totalReviews }) {
+    const { t } = useTranslation();
     // Convert averageRating to number
     const numericRating = parseFloat(averageRating) || 0;
     
     if (!reviews || reviews.length === 0) {
         return (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <p className="text-gray-500">Belum ada review untuk produk ini.</p>
-                <p className="text-sm text-gray-400 mt-2">Jadilah yang pertama memberikan review!</p>
+                <p className="text-gray-500">{t('no_reviews_yet')}</p>
+                <p className="text-sm text-gray-400 mt-2">{t('be_first_reviewer')}</p>
             </div>
         );
     }

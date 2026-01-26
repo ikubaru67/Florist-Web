@@ -1,9 +1,12 @@
-import ShopLayout from '@/Layouts/ShopLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
+import Toast from '@/Components/Toast';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Plus, Pencil, Trash2, Package, Search, X } from 'lucide-react';
 
-export default function Index({ auth, products, filters }) {
+export default function Index({ products, filters }) {
     const [search, setSearch] = useState(filters?.search || '');
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -22,221 +25,222 @@ export default function Index({ auth, products, filters }) {
     };
 
     const handleDelete = (productId, productName) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus produk "${productName}"?`)) {
+        if (confirm(`Are you sure you want to delete "${productName}"?`)) {
             router.delete(route('admin.products.destroy', productId), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    alert('Produk berhasil dihapus');
+                    setToast({ show: true, message: 'Product deleted successfully!', type: 'success' });
+                },
+                onError: () => {
+                    setToast({ show: true, message: 'Failed to delete product. Please try again.', type: 'error' });
                 }
             });
         }
     };
 
     const formatRupiah = (amount) => {
-        return new Intl.NumberFormat('id-ID').format(Number(amount));
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+        }).format(Number(amount));
+    };
+
+    const getStockStatus = (stock) => {
+        if (stock === 0) return { label: 'Out of Stock', color: 'bg-red-100 text-red-700 border-red-200' };
+        if (stock <= 5) return { label: `Low Stock (${stock})`, color: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
+        return { label: `In Stock (${stock})`, color: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
     };
 
     return (
-        <ShopLayout auth={auth}>
-            <Head title="Kelola Produk" />
+        <AdminLayout
+            title="Product Management"
+            description="Add, edit, and manage your flower products"
+        >
+            <Head title="Products Management" />
 
-            <div className="py-12 bg-gray-50 min-h-screen">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header Title */}
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard - Kelola Produk</h1>
+            <div className="space-y-6">
+                {/* Header with Add Button */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white p-8">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                <Package className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Products</h2>
+                                <p className="text-sm text-gray-500">Manage your flower catalog</p>
+                            </div>
+                        </div>
+                        <Link
+                            href={route('admin.products.create')}
+                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all"
+                        >
+                            <Plus className="w-5 h-5" />
+                            <span>Add Product</span>
+                        </Link>
                     </div>
 
-                    {/* Action Buttons & Search Bar */}
-                    <div className="mb-6">
-                        {/* Buttons */}
-                        <div className="flex gap-3 mb-4">
-                            <Link
-                                href={route('admin.orders.index')}
-                                className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
-                            >
-                                Kelola Pesanan
-                            </Link>
-                            <Link
-                                href={route('admin.addons.index')}
-                                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-                            >
-                                Kelola Add-ons
-                            </Link>
-                            <Link
-                                href={route('admin.products.create')}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-                            >
-                                + Tambah Produk
-                            </Link>
-                        </div>
-
-                        {/* Search Form */}
-                        <form onSubmit={handleSearch} className="flex gap-3">
-                            <div className="flex-1">
+                    {/* Search Bar */}
+                    <form onSubmit={handleSearch} className="mt-6">
+                        <div className="flex gap-3">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Cari produk berdasarkan nama, deskripsi, atau kategori..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                    placeholder="Search products by name, description, or category..."
+                                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all shadow-sm hover:border-emerald-300"
                                 />
                             </div>
                             <button
                                 type="submit"
-                                className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 font-medium"
+                                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all font-medium"
                             >
-                                🔍 Cari
+                                Search
                             </button>
                             {filters?.search && (
                                 <button
                                     type="button"
                                     onClick={handleClearSearch}
-                                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
+                                    className="px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
                                 >
-                                    ✕ Clear
+                                    <X className="w-5 h-5" />
                                 </button>
                             )}
-                        </form>
+                        </div>
                         {filters?.search && (
-                            <p className="mt-2 text-sm text-gray-600">
-                                Hasil pencarian untuk: <span className="font-semibold">"{filters.search}"</span>
+                            <p className="mt-3 text-sm text-gray-600">
+                                Search results for: <span className="font-semibold text-emerald-600">"{filters.search}"</span>
                             </p>
                         )}
-                    </div>
+                    </form>
+                </div>
 
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                        {/* Table wrapper with horizontal scroll */}
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Gambar
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Nama Produk
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Kategori
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Harga
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Stok
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Status
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                            Aksi
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {products.data.map((product) => (
-                                        <tr key={product.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {product.image ? (
-                                                    <img
-                                                        src={product.image}
-                                                        alt={product.name}
-                                                        className="h-12 w-12 object-cover rounded"
-                                                    />
-                                                ) : (
-                                                    <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
-                                                        <span className="text-gray-400 text-xs">No Image</span>
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {product.name}
-                                                </div>
-                                                {product.is_featured && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
-                                                        Featured
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {product.category?.name || '-'}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    Rp {formatRupiah(product.price)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {product.stock}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {product.is_active ? (
-                                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                        Aktif
-                                                    </span>
-                                                ) : (
-                                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                        Nonaktif
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={route('admin.products.edit', product.id)}
-                                                        className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                                                    >
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(product.id, product.name)}
-                                                        className="inline-block bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium transition-colors"
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {products.links.length > 3 && (
-                            <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                                <div className="flex justify-between items-center">
-                                    <div className="text-sm text-gray-700">
-                                        Showing <span className="font-medium">{products.from}</span> to{' '}
-                                        <span className="font-medium">{products.to}</span> of{' '}
-                                        <span className="font-medium">{products.total}</span> results
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {products.links.map((link, index) => (
-                                            <Link
-                                                key={index}
-                                                href={link.url || '#'}
-                                                className={`px-3 py-1 rounded ${
-                                                    link.active
-                                                        ? 'bg-pink-600 text-white'
-                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                                } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                {/* Products List */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white p-8">
+                    {products.data.length > 0 ? (
+                        <div className="space-y-2">
+                            {products.data.map((product) => (
+                                <div
+                                    key={product.id}
+                                    className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/50 transition-all group"
+                                >
+                                    {/* Product Image */}
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                        {product.image ? (
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover"
                                             />
-                                        ))}
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-100">
+                                                <Package className="w-8 h-8 text-emerald-600" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Product Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-gray-900 truncate mb-1">
+                                            {product.name}
+                                        </h3>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="font-medium text-gray-900">
+                                                {formatRupiah(product.price)}
+                                            </span>
+                                            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-xs font-medium">
+                                                {product.category?.name}
+                                            </span>
+                                            <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStockStatus(product.stock).color}`}>
+                                                {getStockStatus(product.stock).label}
+                                            </span>
+                                            {product.is_featured && (
+                                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-xs border border-yellow-300 font-medium">
+                                                    ⭐ Featured
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                        <Link
+                                            href={route('admin.products.edit', product.id)}
+                                            className="px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors"
+                                            title="Edit product"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(product.id, product.name)}
+                                            className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors"
+                                            title="Delete product"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Package className="w-8 h-8 text-emerald-600" />
                             </div>
-                        )}
-                    </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+                            <p className="text-gray-500 mb-6">
+                                {filters?.search 
+                                    ? 'Try adjusting your search terms'
+                                    : 'Start by adding your first product!'
+                                }
+                            </p>
+                            {!filters?.search && (
+                                <Link
+                                    href={route('admin.products.create')}
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    <span>Add Your First Product</span>
+                                </Link>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {products.links && products.links.length > 3 && (
+                        <div className="mt-6 flex justify-center">
+                            <nav className="flex items-center gap-2">
+                                {products.links.map((link, index) => (
+                                    <Link
+                                        key={index}
+                                        href={link.url || '#'}
+                                        disabled={!link.url}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                            link.active
+                                                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
+                                                : link.url
+                                                ? 'bg-white border border-gray-200 text-gray-700 hover:border-emerald-300 hover:bg-emerald-50'
+                                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
+                            </nav>
+                        </div>
+                    )}
                 </div>
             </div>
-        </ShopLayout>
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
+        </AdminLayout>
     );
 }

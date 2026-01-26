@@ -1,8 +1,50 @@
-﻿# Florist Shop Website
+﻿# Kala Florist - Modern Flower Shop Website
 
-Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien. 🌸
+Website florist modern dengan desain elegan yang dirancang untuk memudahkan pelanggan dalam melihat katalog bunga, melakukan pemesanan dengan verifikasi email, serta mempermudah admin dalam mengelola pesanan dan produk secara efisien.
 
-**🌍 Multi-Language Support**: Website ini mendukung 2 bahasa (Indonesia & English) untuk customer internasional.
+**Live Demo**: [http://localhost:8000](http://localhost:8000)
+
+---
+
+## 🎨 Design System
+
+### Colors
+- **Primary (Dark Green)**: `#064232` - Brand color, navbar, buttons
+- **Secondary (Mid Green)**: `#568F87` - Accents, hover states
+- **Accent (Pink)**: `#F5BABB` - Highlights, CTAs
+- **Background (Peach)**: `#FFF5F2` - Section backgrounds
+
+### Typography
+- **Serif (Headings)**: Merriweather (400, 700, 900)
+- **Sans-serif (Body)**: Space Grotesk (300-700)
+
+### Logo & Branding
+- Logo placed in: `public/images/Logo.png` & `LogoWhite.png`
+- Favicon: Logo.png
+- Logo displayed in: Navbar, Footer, Browser Tab
+
+---
+
+## ✨ New Features (Jan 2026)
+
+### 🎨 Homepage Redesign
+- **Sticky Navbar** dengan scroll detection:
+  - Transparent background saat di atas
+  - White background + shadow saat scroll
+  - Dynamic text color (white → dark green)
+- **Full-screen Hero Banner** dengan image dari admin settings
+- **Featured Products Section** (4 produk unggulan)
+- **Latest Products Section** (8 produk terbaru)
+- **Footer** dengan 4 kolom: Brand, Quick Links, Customer Service, Social Media
+- **Multi-language Support** (Indonesia/English) dengan LanguageSwitcher component
+- **Logo Integration** di navbar dan footer
+
+### 🛍️ Product Cards Enhancement
+- Warna harga: Dark green `#064232` (sesuai brand)
+- Stock status: Mid green `#568F87` dengan font-medium
+- Consistent layout dengan flexbox (harga & stock selalu di posisi sama)
+- Rating display dengan stars + review count
+- Hover effects dengan scale transform
 
 ---
 
@@ -14,26 +56,12 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
    - Forgot Password dengan verifikasi kode
    - Logout
 
-2. **Multi-Language** 🆕
-   - 🇮🇩 Bahasa Indonesia (Default)
-   - 🇬🇧 English
-   - Language switcher di navbar
-   - Auto-detect browser language
-   - Preference tersimpan di session
-
-2. **Multi-Language** 🆕
-   - 🇮🇩 Bahasa Indonesia (Default)
-   - 🇬🇧 English
-   - Language switcher di navbar
-   - Auto-detect browser language
-   - Preference tersimpan di session
-
-3. **Profil Management**
+2. **Profil Management**
    - Edit profil (Nama, Email, Phone, Alamat, Kota, Kode Pos)
    - Ganti password dengan verifikasi OTP
    - Delete account
 
-4. **Katalog & Shopping**
+3. **Katalog & Shopping**
    - Melihat katalog produk bunga
    - Filter by kategori
    - Detail produk dengan multiple images
@@ -42,21 +70,21 @@ Website florist modern yang dirancang untuk memudahkan pelanggan dalam melihat k
    - Tambah produk + add-ons ke keranjang
    - Direct Order (beli langsung tanpa keranjang)
 
-5. **Keranjang Belanja**
+4. **Keranjang Belanja**
    - Melihat semua item di keranjang
    - Update jumlah produk
    - Hapus item dari keranjang
    - Checkout semua item sekaligus
    - Cart icon dengan badge count
 
-6. **Pemesanan**
+5. **Pemesanan**
    - Order langsung dari detail produk (Direct Order)
    - Order dari keranjang (Cart Checkout)
    - Form otomatis terisi data user (nama, email, phone, alamat)
    - Input jumlah & catatan khusus
    - Generate invoice otomatis
 
-7. **Riwayat Pesanan**
+6. **Riwayat Pesanan**
    - Melihat semua pesanan
    - Detail pesanan dengan add-ons
    - **Status "Menunggu Pembayaran"** untuk pending orders ( )

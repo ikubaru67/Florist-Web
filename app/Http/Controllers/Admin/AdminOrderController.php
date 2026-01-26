@@ -31,9 +31,6 @@ class AdminOrderController extends Controller
         $orders = $query->paginate(20);
 
         return Inertia::render('Admin/Orders/Index', [
-            'auth' => [
-                'user' => $request->user()
-            ],
             'orders' => $orders,
             'filters' => [
                 'status' => $request->status,

@@ -63,6 +63,7 @@ class AdminProductController extends Controller
         return Inertia::render('Admin/Products/Create', [
             'categories' => $categories,
             'availableAddons' => $addons,
+            'occasions' => \App\Models\Occasion::orderBy('name')->get(),
         ]);
     }
 
@@ -71,7 +72,9 @@ class AdminProductController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
             'description' => 'required|string',
+            'description_en' => 'required|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|url',
@@ -81,13 +84,17 @@ class AdminProductController extends Controller
             'is_active' => 'boolean',
             'selected_addons' => 'nullable|array',
             'selected_addons.*' => 'exists:addons,id',
+            'selected_occasions' => 'nullable|array',
+            'selected_occasions.*' => 'exists:occasions,id',
         ]);
 
         $product = Product::create([
             'category_id' => $request->category_id,
             'name' => $request->name,
+            'name_en' => $request->name_en,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
+            'description_en' => $request->description_en,
             'price' => $request->price,
             'stock' => $request->stock,
             'image' => $request->image,
@@ -115,6 +122,11 @@ class AdminProductController extends Controller
             $product->addons()->attach($request->selected_addons);
         }
 
+        // Attach selected occasions to product
+        if ($request->has('selected_occasions') && is_array($request->selected_occasions)) {
+            $product->occasions()->attach($request->selected_occasions);
+        }
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil ditambahkan!');
     }
@@ -124,7 +136,7 @@ class AdminProductController extends Controller
         $categories = Category::all();
         
         // Load product images and addons with their images
-        $product->load(['productImages', 'addons.images']);
+        $product->load(['productImages', 'addons.images', 'occasions']);
 
         // Get all available addons
         $addons = \App\Models\Addon::with('images')
@@ -151,6 +163,7 @@ class AdminProductController extends Controller
             'product' => $product,
             'categories' => $categories,
             'availableAddons' => $addons,
+            'occasions' => \App\Models\Occasion::orderBy('name')->get(),
         ]);
     }
 
@@ -159,7 +172,9 @@ class AdminProductController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
             'description' => 'required|string',
+            'description_en' => 'required|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'image' => 'nullable|url',
@@ -169,13 +184,17 @@ class AdminProductController extends Controller
             'is_active' => 'boolean',
             'selected_addons' => 'nullable|array',
             'selected_addons.*' => 'exists:addons,id',
+            'selected_occasions' => 'nullable|array',
+            'selected_occasions.*' => 'exists:occasions,id',
         ]);
 
         $product->update([
             'category_id' => $request->category_id,
             'name' => $request->name,
+            'name_en' => $request->name_en,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
+            'description_en' => $request->description_en,
             'price' => $request->price,
             'stock' => $request->stock,
             'image' => $request->image,
@@ -207,6 +226,13 @@ class AdminProductController extends Controller
             $product->addons()->sync($request->selected_addons);
         } else {
             $product->addons()->detach();
+        }
+
+        // Sync selected occasions (many-to-many relationship)
+        if ($request->has('selected_occasions')) {
+            $product->occasions()->sync($request->selected_occasions);
+        } else {
+            $product->occasions()->detach();
         }
 
         return redirect()->route('admin.products.index')

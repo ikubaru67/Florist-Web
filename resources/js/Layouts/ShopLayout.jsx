@@ -1,14 +1,16 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { Flower2, ShoppingCart, Facebook, Instagram, Twitter } from 'lucide-react';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function ShopLayout({ children, auth }) {
     const [cartCount, setCartCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { locale, translations } = usePage().props;
-
-    // Helper function to get translation
-    const t = (key) => translations?.[key] || key;
+    const { t, locale } = useTranslation();
+    
+    console.log('ShopLayout - Current locale:', locale);
+    console.log('ShopLayout - Translation for home:', t('home'));
 
     useEffect(() => {
         if (auth?.user) {
@@ -20,59 +22,45 @@ export default function ShopLayout({ children, auth }) {
     }, [auth]);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-50">
-                <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
+                <nav className="max-w-7xl mx-auto px-6 md:px-12">
+                    <div className="flex justify-between items-center py-4">
                         {/* Logo */}
-                        <div className="flex items-center">
-                            <Link href="/" className="flex items-center">
-                                <span className="text-xl sm:text-2xl font-bold text-pink-600">🌸 Florist</span>
-                            </Link>
-                        </div>
+                        <Link href="/" className="flex items-center gap-2 text-[#064232] hover:text-[#568F87] transition-colors">
+                            <Flower2 className="w-8 h-8" />
+                            <span className="text-xl font-serif">Kala Florist</span>
+                        </Link>
 
                         {/* Desktop Navigation */}
-                        <div className="hidden md:flex md:items-center md:space-x-4">
+                        <div className="hidden md:flex md:items-center md:gap-8">
                             <Link
                                 href="/"
-                                className="px-3 py-2 text-sm font-medium text-gray-900 hover:text-pink-600 transition-colors"
+                                className="text-[#064232] hover:text-[#568F87] transition-colors"
                             >
                                 {t('home')}
                             </Link>
                             <Link
                                 href="/shop"
-                                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
+                                className="text-[#064232] hover:text-[#568F87] transition-colors"
                             >
                                 {t('catalog')}
                             </Link>
-
-                            {/* Language Switcher - Desktop */}
-                            <LanguageSwitcher currentLocale={locale} />
+                            
+                            {/* Language Switcher */}
+                            <LanguageSwitcher />
 
                             {auth?.user ? (
                                 <>
                                     {/* Cart Icon */}
                                     <Link
                                         href="/cart"
-                                        className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors"
+                                        className="relative p-2 hover:bg-[#FFF5F2] rounded-lg transition-colors"
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-6 w-6"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                                            />
-                                        </svg>
+                                        <ShoppingCart className="w-6 h-6 text-[#568F87]" />
                                         {cartCount > 0 && (
-                                            <span className="absolute top-0 right-0 bg-pink-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                            <span className="absolute -top-1 -right-1 bg-[#F5BABB] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                                                 {cartCount}
                                             </span>
                                         )}
@@ -80,29 +68,29 @@ export default function ShopLayout({ children, auth }) {
                                     
                                     <Link
                                         href="/orders"
-                                        className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
+                                        className="text-[#064232] hover:text-[#568F87] transition-colors"
                                     >
                                         {t('orders')}
                                     </Link>
                                     <Link
                                         href="/profile"
-                                        className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
+                                        className="text-[#064232] hover:text-[#568F87] transition-colors"
                                     >
                                         {t('profile')}
                                     </Link>
                                     {auth.user.is_admin === 1 && (
                                         <Link
                                             href="/admin"
-                                            className="px-3 py-2 text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors"
+                                            className="text-[#568F87] hover:text-[#064232] transition-colors"
                                         >
-                                            {t('admin_panel')}
+                                            {t('dashboard')}
                                         </Link>
                                     )}
                                     <Link
                                         href="/logout"
                                         method="post"
                                         as="button"
-                                        className="px-4 py-2 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition-colors"
+                                        className="bg-[#064232] hover:bg-[#568F87] text-white px-6 py-2 rounded-full transition-colors"
                                     >
                                         {t('logout')}
                                     </Link>
@@ -111,13 +99,13 @@ export default function ShopLayout({ children, auth }) {
                                 <>
                                     <Link
                                         href="/login"
-                                        className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-pink-600 transition-colors"
+                                        className="text-[#064232] hover:text-[#568F87] transition-colors"
                                     >
                                         {t('login')}
                                     </Link>
                                     <Link
                                         href="/register"
-                                        className="px-4 py-2 text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 transition-colors"
+                                        className="bg-[#064232] hover:bg-[#568F87] text-white px-6 py-2 rounded-full transition-colors"
                                     >
                                         {t('register')}
                                     </Link>
@@ -131,24 +119,11 @@ export default function ShopLayout({ children, auth }) {
                             {auth?.user && (
                                 <Link
                                     href="/cart"
-                                    className="relative p-2 text-gray-700 hover:text-pink-600"
+                                    className="relative p-2 hover:bg-[#FFF5F2] rounded-lg transition-colors"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-6 w-6"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                                        />
-                                    </svg>
+                                    <ShoppingCart className="w-6 h-6 text-[#568F87]" />
                                     {cartCount > 0 && (
-                                        <span className="absolute top-0 right-0 bg-pink-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                        <span className="absolute -top-1 -right-1 bg-[#F5BABB] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                                             {cartCount}
                                         </span>
                                     )}
@@ -157,7 +132,7 @@ export default function ShopLayout({ children, auth }) {
                             
                             <button
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="p-2 rounded-md text-gray-700 hover:text-pink-600 hover:bg-gray-100"
+                                className="p-2 rounded-md text-[#064232] hover:text-[#568F87]"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -190,49 +165,49 @@ export default function ShopLayout({ children, auth }) {
                         <div className="md:hidden pb-4 space-y-1">
                             <Link
                                 href="/"
-                                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-pink-50 hover:text-pink-600 rounded-md"
+                                className="block px-3 py-2 text-base font-medium text-[#064232] hover:bg-[#FFF5F2] hover:text-[#568F87] rounded-md"
                             >
                                 {t('home')}
                             </Link>
                             <Link
                                 href="/shop"
-                                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
+                                className="block px-3 py-2 text-base font-medium text-[#064232] hover:bg-[#FFF5F2] hover:text-[#568F87] rounded-md"
                             >
                                 {t('catalog')}
                             </Link>
-
-                            {/* Language Switcher - Mobile */}
+                            
+                            {/* Language Switcher Mobile */}
                             <div className="px-3 py-2">
-                                <LanguageSwitcher currentLocale={locale} />
+                                <LanguageSwitcher />
                             </div>
 
                             {auth?.user ? (
                                 <>
                                     <Link
                                         href="/orders"
-                                        className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
+                                        className="block px-3 py-2 text-base font-medium text-[#064232] hover:bg-[#FFF5F2] hover:text-[#568F87] rounded-md"
                                     >
                                         {t('orders')}
                                     </Link>
                                     <Link
                                         href="/profile"
-                                        className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
+                                        className="block px-3 py-2 text-base font-medium text-[#064232] hover:bg-[#FFF5F2] hover:text-[#568F87] rounded-md"
                                     >
                                         {t('profile')}
                                     </Link>
                                     {auth.user.is_admin === 1 && (
                                         <Link
                                             href="/admin"
-                                            className="block px-3 py-2 text-base font-medium text-purple-600 hover:bg-purple-50 hover:text-purple-800 rounded-md"
+                                            className="block px-3 py-2 text-base font-medium text-[#568F87] hover:bg-[#FFF5F2] hover:text-[#064232] rounded-md"
                                         >
-                                            {t('admin_panel')}
+                                            {t('dashboard')}
                                         </Link>
                                     )}
                                     <Link
                                         href="/logout"
                                         method="post"
                                         as="button"
-                                        className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+                                        className="w-full text-left px-3 py-2 text-base font-medium text-white bg-[#064232] hover:bg-[#568F87] rounded-full text-center"
                                     >
                                         {t('logout')}
                                     </Link>
@@ -241,13 +216,13 @@ export default function ShopLayout({ children, auth }) {
                                 <>
                                     <Link
                                         href="/login"
-                                        className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-600 rounded-md"
+                                        className="block px-3 py-2 text-base font-medium text-[#064232] hover:bg-[#FFF5F2] hover:text-[#568F87] rounded-md"
                                     >
                                         {t('login')}
                                     </Link>
                                     <Link
                                         href="/register"
-                                        className="block px-3 py-2 text-base font-medium text-white bg-pink-600 hover:bg-pink-700 rounded-md text-center"
+                                        className="block px-3 py-2 text-base font-medium text-white bg-[#064232] hover:bg-[#568F87] rounded-full text-center"
                                     >
                                         {t('register')}
                                     </Link>
@@ -262,31 +237,84 @@ export default function ShopLayout({ children, auth }) {
             <main>{children}</main>
 
             {/* Footer */}
-            <footer className="bg-gray-800 text-white mt-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <footer className="bg-[#064232] text-white py-12 px-6 md:px-12">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {/* Brand */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-4">Florist Shop</h3>
-                            <p className="text-gray-400 text-sm">
-                                {t('footer_description')}
+                            <div className="flex items-center gap-2 mb-4">
+                                <Flower2 className="w-8 h-8" />
+                                <span className="text-xl font-serif">Kala Florist</span>
+                            </div>
+                            <p className="text-gray-400">
+                                Creating beautiful moments through the art of flowers since 2009
                             </p>
                         </div>
+                        
+                        {/* Quick Links */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-4">{t('quick_links')}</h3>
+                            <h4 className="mb-4 font-serif">{t('quick_links')}</h4>
                             <ul className="space-y-2 text-sm">
-                                <li><Link href="/" className="text-gray-400 hover:text-white">{t('home')}</Link></li>
-                                <li><Link href="/shop" className="text-gray-400 hover:text-white">{t('catalog')}</Link></li>
-                                {auth?.user && <li><Link href="/orders" className="text-gray-400 hover:text-white">{t('orders')}</Link></li>}
+                                <li>
+                                    <Link href="/" className="text-gray-400 hover:text-[#F5BABB] transition-colors">
+                                        {t('home')}
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/shop" className="text-gray-400 hover:text-[#F5BABB] transition-colors">
+                                        {t('catalog')}
+                                    </Link>
+                                </li>
+                                {auth?.user && (
+                                    <li>
+                                        <Link href="/orders" className="text-gray-400 hover:text-[#F5BABB] transition-colors">
+                                            {t('my_orders')}
+                                        </Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
+                        
+                        {/* Customer Service */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-4">{t('contact')}</h3>
-                            <p className="text-gray-400 text-sm">Email: info@florist.com</p>
-                            <p className="text-gray-400 text-sm">Phone: +62 123 4567 890</p>
+                            <h4 className="mb-4 font-serif">Customer Service</h4>
+                            <ul className="space-y-2 text-gray-400">
+                                <li><a href="#" className="hover:text-[#F5BABB] transition-colors">Delivery Info</a></li>
+                                <li><a href="#" className="hover:text-[#F5BABB] transition-colors">Returns</a></li>
+                                <li><a href="#" className="hover:text-[#F5BABB] transition-colors">FAQ</a></li>
+                                <li><a href="#" className="hover:text-[#F5BABB] transition-colors">Care Guide</a></li>
+                            </ul>
+                        </div>
+                        
+                        {/* Social Media */}
+                        <div>
+                            <h4 className="mb-4 font-serif">Follow Us</h4>
+                            <div className="flex gap-4">
+                                <a 
+                                    href="#" 
+                                    className="bg-[#568F87] p-3 rounded-full hover:bg-[#F5BABB] transition-colors"
+                                >
+                                    <Facebook className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="#" 
+                                    className="bg-[#568F87] p-3 rounded-full hover:bg-[#F5BABB] transition-colors"
+                                >
+                                    <Instagram className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="#" 
+                                    className="bg-[#568F87] p-3 rounded-full hover:bg-[#F5BABB] transition-colors"
+                                >
+                                    <Twitter className="w-5 h-5" />
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400 text-sm">
-                        <p>&copy; 2025 Florist Shop. {t('all_rights_reserved')}</p>
+                    
+                    {/* Copyright */}
+                    <div className="border-t border-gray-800 pt-8 text-center text-gray-400 mt-8">
+                        <p>&copy; 2024 Kala Florist. All rights reserved.</p>
                     </div>
                 </div>
             </footer>

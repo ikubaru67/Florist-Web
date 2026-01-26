@@ -1,7 +1,13 @@
 import ShopLayout from '@/Layouts/ShopLayout';
+import Toast from '@/Components/Toast';
 import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function CartIndex({ auth, cartItems, total }) {
+    const { t } = useTranslation();
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    
     const updateQuantity = (itemId, quantity) => {
         router.patch(`/cart/${itemId}`, { quantity }, {
             preserveScroll: true
@@ -9,25 +15,32 @@ export default function CartIndex({ auth, cartItems, total }) {
     };
 
     const removeItem = (itemId) => {
-        if (confirm('Hapus item ini dari keranjang?')) {
+        if (confirm(t('confirm_remove_item'))) {
             router.delete(`/cart/${itemId}`, {
-                preserveScroll: true
+                preserveScroll: true,
+                onSuccess: () => {
+                    setToast({ show: true, message: 'Item berhasil dihapus dari keranjang', type: 'success' });
+                }
             });
         }
     };
 
     const clearCart = () => {
-        if (confirm('Kosongkan seluruh keranjang?')) {
-            router.delete('/cart');
+        if (confirm(t('confirm_clear_cart'))) {
+            router.delete('/cart', {
+                onSuccess: () => {
+                    setToast({ show: true, message: 'Keranjang berhasil dikosongkan', type: 'success' });
+                }
+            });
         }
     };
 
     return (
         <ShopLayout auth={auth}>
-            <Head title="Keranjang - Florist" />
+            <Head title={`${t('cart')} - Florist`} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Keranjang Belanja</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">{t('shopping_cart')}</h1>
 
                 {Array.isArray(cartItems) && cartItems.length > 0 ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -73,7 +86,7 @@ export default function CartIndex({ auth, cartItems, total }) {
                                                     onClick={() => removeItem(item.id)}
                                                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
-                                                    🗑️ Hapus
+                                                    🗑️ {t('remove')}
                                                 </button>
                                             </div>
                                         </div>
@@ -90,17 +103,17 @@ export default function CartIndex({ auth, cartItems, total }) {
                                 onClick={clearCart}
                                 className="text-red-600 hover:text-red-800 text-sm font-medium mt-4"
                             >
-                                🗑️ Kosongkan Keranjang
+                                🗑️ {t('clear_cart')}
                             </button>
                         </div>
 
                         {/* Order Summary */}
                         <div className="lg:col-span-1">
                             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:sticky lg:top-20">
-                                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Ringkasan Pesanan</h2>
+                                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">{t('order_summary')}</h2>
                                 <div className="space-y-2 mb-4">
                                     <div className="flex justify-between text-sm sm:text-base">
-                                        <span className="text-gray-600">Subtotal</span>
+                                        <span className="text-gray-600">{t('subtotal')}</span>
                                         <span className="font-semibold">
                                             Rp {Number(total).toLocaleString('id-ID')}
                                         </span>
@@ -108,7 +121,7 @@ export default function CartIndex({ auth, cartItems, total }) {
                                 </div>
                                 <div className="border-t pt-4 mb-4">
                                     <div className="flex justify-between text-base sm:text-lg font-bold">
-                                        <span>Total</span>
+                                        <span>{t('total')}</span>
                                         <span className="text-pink-600">
                                             Rp {Number(total).toLocaleString('id-ID')}
                                         </span>
@@ -118,13 +131,13 @@ export default function CartIndex({ auth, cartItems, total }) {
                                     href="/cart/checkout"
                                     className="block w-full bg-pink-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors text-sm sm:text-base"
                                 >
-                                    Lanjut ke Checkout
+                                    {t('checkout')}
                                 </Link>
                                 <Link
                                     href="/shop"
                                     className="block w-full text-center mt-4 text-pink-600 hover:text-pink-800 text-sm sm:text-base"
                                 >
-                                    Lanjut Belanja
+                                    {t('continue_shopping')}
                                 </Link>
                             </div>
                         </div>
@@ -133,20 +146,28 @@ export default function CartIndex({ auth, cartItems, total }) {
                     <div className="text-center py-12">
                         <div className="text-5xl sm:text-6xl mb-4">🛒</div>
                         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4">
-                            Keranjang Anda Kosong
+                            {t('empty_cart')}
                         </h2>
                         <p className="text-sm sm:text-base text-gray-600 mb-8">
-                            Belum ada produk di keranjang Anda
+                            {t('empty_cart_message')}
                         </p>
                         <Link
                             href="/shop"
                             className="inline-block bg-pink-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors text-sm sm:text-base"
                         >
-                            Mulai Belanja
+                            {t('start_shopping')}
                         </Link>
                     </div>
                 )}
             </div>
+
+            {/* Toast Notification */}
+            <Toast
+                show={toast.show}
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </ShopLayout>
     );
 }
